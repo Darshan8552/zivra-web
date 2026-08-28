@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { FollowList } from "#/components/FollowList.tsx";
 import { userProfileQueryOptions } from "#/lib/users/users.hooks.ts";
 
@@ -13,15 +13,6 @@ export const Route = createFileRoute(
 		context.queryClient.ensureQueryData(
 			userProfileQueryOptions(params.username),
 		),
-	beforeLoad: async ({ context, params }) => {
-		const user = await context.queryClient.ensureQueryData(
-			userProfileQueryOptions(params.username),
-		);
-
-		if (user.isPrivate && !user.isOwnProfile && !user.isFollowing) {
-			throw new Response(null, { status: 404 });
-		}
-	},
 });
 
 function FollowersFollowingPage() {
@@ -63,6 +54,31 @@ function FollowersFollowingPage() {
 					<p className="font-display text-3xl tracking-tight mt-2">
 						This account doesn't exist
 					</p>
+					<Link
+						to="/feed"
+						className="mt-6 inline-block text-sm font-semibold text-accent hover:underline"
+					>
+						Back to feed
+					</Link>
+				</div>
+			</div>
+		);
+	}
+
+	if (user.isPrivate && !user.isOwnProfile && !user.isFollowing) {
+		return (
+			<div className="px-4 sm:px-6 lg:px-10 pt-24">
+				<div className="max-w-4xl mx-auto text-center">
+					<p className="overline text-muted-foreground">Private account</p>
+					<p className="font-display text-3xl tracking-tight mt-2">
+						Follow this account to see their followers and following
+					</p>
+					<Link
+						to={`/users/${username}`}
+						className="mt-6 inline-block text-sm font-semibold text-accent hover:underline"
+					>
+						Back to profile
+					</Link>
 				</div>
 			</div>
 		);
