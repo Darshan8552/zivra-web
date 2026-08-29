@@ -48,3 +48,26 @@ export function useSearchPosts(q: string, limit = 12) {
     placeholderData: (prev) => prev,
   });
 }
+
+export function useTrendingHashtags(limit = 12) {
+  return useQuery({
+    queryKey: ["search", "trending", "tags", limit] as const,
+    queryFn: () => suggestHashtagsFn({ data: { q: "", limit } }),
+    staleTime: 60_000,
+    gcTime: 5 * 60_000,
+  });
+}
+
+export function useTrendingPosts(limit = 12) {
+  return useInfiniteQuery({
+    queryKey: ["search", "trending", "posts", limit] as const,
+    queryFn: ({ pageParam }) =>
+      searchPostsFn({
+        data: { q: "", cursor: pageParam as string | undefined, limit },
+      }),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+    staleTime: 60_000,
+    gcTime: 5 * 60_000,
+  });
+}

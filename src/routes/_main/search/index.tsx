@@ -2,12 +2,13 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Loader2, SearchIcon, TrendingUp } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { PostCard } from "#/components/PostCard.tsx";
-import { discoverGrid, trendingTopics } from "#/lib/mock.ts";
 import { useDebouncedValue } from "#/lib/use-debounced-value.ts";
 import {
   useHashtagSuggestions,
   useSearchPosts,
   useSearchUsers,
+  useTrendingHashtags,
+  useTrendingPosts,
 } from "#/lib/search/search.hooks.ts";
 import { useSuggestions, useToggleFollow } from "#/lib/users/users.hooks.ts";
 import type { SuggestionUser } from "#/lib/users/users.types.ts";
@@ -54,6 +55,8 @@ function SearchPage() {
   }, [qDebounced, navigate, search.q]);
 
   const suggestionsQuery = useSuggestions();
+  const trendingTagsQuery = useTrendingHashtags(12);
+  const trendingPostsQuery = useTrendingPosts(12);
   const toggleFollow = useToggleFollow();
   const [followState, setFollowState] = useState<
     Record<string, "following" | "requested" | "idle">
@@ -189,7 +192,7 @@ function SearchPage() {
 
         {!isSearching ? (
           <>
-            {/* Trending — real would be hashtags/suggestions?q=&limit=5, mock fallback for empty */}
+            {/* Trending tags — real */}
             <section className="mb-12">
               <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-2">
@@ -204,107 +207,177 @@ function SearchPage() {
                   type="button"
                   data-testid="trending-see-all"
                   className="text-xs text-muted-foreground hover:text-foreground transition-colors duration-200"
+                  onClick={() => {
+                    const first = trendingTagsQuery.data?.[0];
+                    if (first) {
+                      setQInput(`#${first.name}`);
+                      switchTab("tags");
+                    }
+                  }}
                 >
                   See all
                 </button>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {trendingTopics.map((t) => (
+              {trendingTagsQuery.isLoading ? (
+                <div className="flex flex-wrap gap-2">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="h-10 w-24 rounded-full bg-secondary animate-pulse" />
+                  ))}
+                </div>
+              ) : trendingTagsQuery.isError ? (
+                <div className="rounded-2xl border border-destructive/20 bg-destructive/5 p-4 text-center">
+                  <p className="text-sm text-destructive">Failed to load trending tags</p>
                   <button
-                    key={t.tag}
                     type="button"
-                    data-testid={`trending-${t.tag}`}
-                    onClick={() => {
-                      setQInput(`#${t.tag}`);
-                      switchTab("tags");
-                    }}
-                    className="group flex items-center gap-2 px-4 h-10 rounded-full bg-secondary hover:bg-foreground hover:text-background transition-colors duration-200"
+                    onClick={() => void trendingTagsQuery.refetch()}
+                    className="mt-2 text-xs font-semibold px-3 h-7 rounded-full bg-foreground text-background"
                   >
-                    <span className="font-display font-semibold tracking-tight">#{t.tag}</span>
-                    <span className="text-xs text-muted-foreground group-hover:text-background/70">
-                      {t.posts}
-                    </span>
+                    Retry
                   </button>
-                ))}
-              </div>
+                </div>
+              ) : (trendingTagsQuery.data?.length ?? 0) === 0 ? (
+                <p className="text-sm text-muted-foreground">No trending tags yet — be the first to post with a hashtag</p>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {trendingTagsQuery.data?.map((h) => (
+                    <button
+                      key={h.id}
+                      type="button"
+                      data-testid={`trending-${h.name}`}
+                      onClick={() => {
+                        setQInput(`#${h.name}`);
+                        switchTab("tags");
+                      }}
+                      className="group flex items-center gap-2 px-4 h-10 rounded-full bg-secondary hover:bg-foreground hover:text-background transition-colors duration-200"
+                    >
+                      <span className="font-display font-semibold tracking-tight">#{h.name}</span>
+                      <span className="text-xs text-muted-foreground group-hover:text-background/70">
+                        {h.postCount} posts
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </section>
 
-            {/* People you may know — real */}
+            {/* People you may know — real with empty text */}
             <section className="mb-12">
               <p className="overline text-muted-foreground mb-5">People you may know</p>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                {suggestions.map((s) => (
-                  <div
-                    key={s.id}
-                    className="rounded-2xl border border-border p-5 text-center"
+              {suggestionsQuery.isLoading ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="h-40 rounded-2xl border border-border bg-secondary animate-pulse" />
+                  ))}
+                </div>
+              ) : suggestionsQuery.isError ? (
+                <div className="rounded-2xl border border-destructive/20 bg-destructive/5 p-4 text-center">
+                  <p className="text-sm text-destructive">Failed to load suggestions</p>
+                  <button
+                    type="button"
+                    onClick={() => void suggestionsQuery.refetch()}
+                    className="mt-2 text-xs font-semibold px-3 h-7 rounded-full bg-foreground text-background"
                   >
-                    <Link
-                      to="/users/$username"
-                      params={{ username: s.username }}
-                      className="flex flex-col items-center"
+                    Retry
+                  </button>
+                </div>
+              ) : suggestions.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No suggestions yet — follow more people to see recommendations</p>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {suggestions.map((s) => (
+                    <div
+                      key={s.id}
+                      className="rounded-2xl border border-border p-5 text-center"
                     >
-                      {avatarUrl(s) ? (
-                        <img
-                          src={avatarUrl(s)}
-                          alt=""
-                          className="h-16 w-16 rounded-xl object-cover mx-auto"
-                        />
-                      ) : (
-                        <div className="h-16 w-16 rounded-xl bg-secondary mx-auto" />
-                      )}
-                      <p className="mt-3 font-display font-semibold text-sm tracking-tight">
-                        {s.name}
-                      </p>
-                      <p className="text-xs text-muted-foreground">@{s.username}</p>
-                    </Link>
-                    <button
-                      type="button"
-                      data-testid={`search-follow-${s.id}`}
-                      onClick={() => handleFollow(s)}
-                      className="mt-4 text-xs font-semibold px-4 h-9 rounded-full bg-foreground text-background hover:bg-accent hover:text-accent-foreground transition-colors duration-200 w-full"
-                    >
-                      {followLabel(s)}
-                    </button>
-                  </div>
-                ))}
-              </div>
+                      <Link
+                        to="/users/$username"
+                        params={{ username: s.username }}
+                        className="flex flex-col items-center"
+                      >
+                        {avatarUrl(s) ? (
+                          <img
+                            src={avatarUrl(s)}
+                            alt=""
+                            className="h-16 w-16 rounded-xl object-cover mx-auto"
+                          />
+                        ) : (
+                          <div className="h-16 w-16 rounded-xl bg-secondary mx-auto" />
+                        )}
+                        <p className="mt-3 font-display font-semibold text-sm tracking-tight">
+                          {s.name}
+                        </p>
+                        <p className="text-xs text-muted-foreground">@{s.username}</p>
+                      </Link>
+                      <button
+                        type="button"
+                        data-testid={`search-follow-${s.id}`}
+                        onClick={() => handleFollow(s)}
+                        className="mt-4 text-xs font-semibold px-4 h-9 rounded-full bg-foreground text-background hover:bg-accent hover:text-accent-foreground transition-colors duration-200 w-full"
+                      >
+                        {followLabel(s)}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </section>
 
-            {/* Editorial picks — mock discoverGrid */}
+            {/* Editorial picks — real trending posts */}
             <section>
               <p className="overline text-muted-foreground mb-5">Editorial picks · this week</p>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-                {discoverGrid.map((src, i) => {
-                  const spans = [
-                    "",
-                    "row-span-2",
-                    "",
-                    "col-span-2",
-                    "",
-                    "",
-                    "row-span-2",
-                    "",
-                    "",
-                    "col-span-2",
-                    "",
-                    "",
-                  ];
-                  return (
-                    <div
-                      key={i}
-                      data-testid={`discover-tile-${i}`}
-                      className={`relative overflow-hidden rounded-2xl group cursor-pointer ${spans[i] || ""}`}
-                    >
-                      <img
-                        src={src}
-                        alt=""
-                        className="w-full h-full object-cover aspect-square min-h-[180px] transition-transform duration-500 group-hover:scale-105"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-                    </div>
-                  );
-                })}
-              </div>
+              {trendingPostsQuery.isLoading ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <div key={i} className="aspect-square rounded-2xl bg-secondary animate-pulse min-h-[180px]" />
+                  ))}
+                </div>
+              ) : trendingPostsQuery.isError ? (
+                <div className="rounded-2xl border border-destructive/20 bg-destructive/5 p-4 text-center">
+                  <p className="text-sm text-destructive">Failed to load editorial picks</p>
+                  <button
+                    type="button"
+                    onClick={() => void trendingPostsQuery.refetch()}
+                    className="mt-2 text-xs font-semibold px-3 h-7 rounded-full bg-foreground text-background"
+                  >
+                    Retry
+                  </button>
+                </div>
+              ) : (trendingPostsQuery.data?.pages.flatMap((p) => p.items).length ?? 0) === 0 ? (
+                <p className="text-sm text-muted-foreground">No editorial picks yet — trending posts will appear here</p>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {trendingPostsQuery.data?.pages
+                    .flatMap((p) => p.items)
+                    .slice(0, 12)
+                    .map((post, i) => {
+                      const spans = ["", "row-span-2", "", "col-span-2", "", "", "row-span-2", "", "", "col-span-2", "", ""];
+                      const cover = post.media[0]?.url;
+                      return (
+                        <Link
+                          key={post.id}
+                          to="/posts/$postId"
+                          params={{ postId: post.id }}
+                          data-testid={`discover-tile-${i}`}
+                          className={`relative overflow-hidden rounded-2xl group cursor-pointer ${spans[i] || ""}`}
+                        >
+                          {cover ? (
+                            <img
+                              src={cover}
+                              alt={post.caption ?? ""}
+                              className="w-full h-full object-cover aspect-square min-h-[180px] transition-transform duration-500 group-hover:scale-105"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-secondary aspect-square min-h-[180px]" />
+                          )}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                          <div className="absolute bottom-2 left-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <p className="text-xs font-semibold text-white truncate">@{post.user.username}</p>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                </div>
+              )}
             </section>
           </>
         ) : (
