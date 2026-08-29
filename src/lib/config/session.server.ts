@@ -3,14 +3,17 @@ import {
   getCookie,
   setCookie,
 } from "@tanstack/react-start/server";
-import type { AuthTokens } from "#/lib/auth/types.ts";
+import type { AuthTokens } from "#/lib/auth/auth.types.ts";
 import {
   ACCESS_TOKEN_COOKIE,
   ACCESS_TOKEN_MAX_AGE_SECONDS,
   REFRESH_TOKEN_COOKIE,
   REFRESH_TOKEN_MAX_AGE_SECONDS,
-} from "#/lib/auth/config.ts";
-import { backendRequest, BackendApiError } from "#/lib/auth/backend-client.ts";
+} from "#/lib/config/config.ts";
+import {
+  backendRequest,
+  BackendApiError,
+} from "#/lib/config/backend-client.ts";
 
 export function setAuthCookies(tokens: AuthTokens): void {
   setCookie(
@@ -36,15 +39,33 @@ function cookieOptions(maxAgeSeconds: number) {
 }
 
 export function clearAuthCookies(): void {
-  deleteCookie(ACCESS_TOKEN_COOKIE, { path: "/" });
-  deleteCookie(REFRESH_TOKEN_COOKIE, { path: "/" });
+  const isProd = process.env.NODE_ENV === "production";
+  const opts = {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: "lax" as const,
+    path: "/",
+  };
+  // Delete both plain and __Host- variants (migration + dual write safety)
+  deleteCookie(ACCESS_TOKEN_COOKIE, opts);
+  deleteCookie(REFRESH_TOKEN_COOKIE, opts);
+  deleteCookie("access_token", opts);
+  deleteCookie("__Host-access_token", opts);
+  deleteCookie("refresh_token", opts);
+  deleteCookie("__Host-refresh_token", opts);
 }
 
 export async function getValidAccessToken(): Promise<string | null> {
-  const accessToken = getCookie(ACCESS_TOKEN_COOKIE);
+  const accessToken =
+    getCookie(ACCESS_TOKEN_COOKIE) ??
+    getCookie("access_token") ??
+    getCookie("__Host-access_token");
   if (accessToken) return accessToken;
 
-  const refreshToken = getCookie(REFRESH_TOKEN_COOKIE);
+  const refreshToken =
+    getCookie(REFRESH_TOKEN_COOKIE) ??
+    getCookie("refresh_token") ??
+    getCookie("__Host-refresh_token");
   if (!refreshToken) return null;
 
   try {
