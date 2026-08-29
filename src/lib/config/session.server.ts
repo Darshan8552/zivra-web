@@ -39,20 +39,24 @@ function cookieOptions(maxAgeSeconds: number) {
 }
 
 export function clearAuthCookies(): void {
-  const isProd = process.env.NODE_ENV === "production";
-  const opts = {
+  const baseOpts = {
     httpOnly: true,
-    secure: isProd,
     sameSite: "lax" as const,
     path: "/",
   };
-  // Delete both plain and __Host- variants (migration + dual write safety)
-  deleteCookie(ACCESS_TOKEN_COOKIE, opts);
-  deleteCookie(REFRESH_TOKEN_COOKIE, opts);
-  deleteCookie("access_token", opts);
-  deleteCookie("__Host-access_token", opts);
-  deleteCookie("refresh_token", opts);
-  deleteCookie("__Host-refresh_token", opts);
+  const names = [
+    ACCESS_TOKEN_COOKIE,
+    REFRESH_TOKEN_COOKIE,
+    "access_token",
+    "__Host-access_token",
+    "refresh_token",
+    "__Host-refresh_token",
+  ];
+  // Delete with both Secure true and false to catch stale variants from pre-fix (plain Secure:false vs __Host Secure:true)
+  for (const name of [...new Set(names)]) {
+    deleteCookie(name, { ...baseOpts, secure: true });
+    deleteCookie(name, { ...baseOpts, secure: false });
+  }
 }
 
 export async function getValidAccessToken(): Promise<string | null> {
