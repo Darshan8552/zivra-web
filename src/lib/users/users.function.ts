@@ -12,6 +12,7 @@ import type {
 	SuggestionUser,
 	UserProfile,
 } from "#/lib/users/users.types.ts";
+import type { UserSuggestion } from "#/lib/posts/posts.types.ts";
 
 async function requireAccessToken(): Promise<string> {
 	const token = await getValidAccessToken();
@@ -111,6 +112,20 @@ export const getUserFollowingFn = createServerFn({ method: "GET" })
 			: "";
 		return backendRequest<FollowListPage>(
 			`/users/${encodeURIComponent(data.username)}/following${query}`,
+			{ bearerToken: accessToken },
+		);
+	});
+
+export const searchUsersFn = createServerFn({ method: "GET" })
+	.validator((data: { q: string; limit?: number }) => data)
+	.handler(async ({ data }) => {
+		const q = data.q.trim();
+		if (!q) return [];
+		const accessToken = await requireAccessToken();
+		const params = new URLSearchParams({ q });
+		if (data.limit) params.set("limit", String(data.limit));
+		return backendRequest<UserSuggestion[]>(
+			`/users/search?${params.toString()}`,
 			{ bearerToken: accessToken },
 		);
 	});
