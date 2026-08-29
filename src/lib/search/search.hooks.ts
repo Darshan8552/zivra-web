@@ -21,7 +21,7 @@ export function useHashtagSuggestions(q: string, limit = 5) {
   const debounced = useDebouncedValue(q.trim(), 300);
   return useQuery({
     queryKey: ["search", "tags", debounced, limit] as const,
-    queryFn: () => suggestHashtagsFn({ data: { q: debounced } }),
+    queryFn: () => suggestHashtagsFn({ data: { q: debounced, limit } }),
     enabled: debounced.length > 0,
     staleTime: 30_000,
     gcTime: 5 * 60_000,

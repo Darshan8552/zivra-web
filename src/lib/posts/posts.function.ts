@@ -11,14 +11,15 @@ import type {
 } from "#/lib/posts/posts.types.ts";
 
 export const suggestHashtagsFn = createServerFn({ method: "GET" })
-	.validator((data: { q: string }) => data)
+	.validator((data: { q: string; limit?: number }) => data)
 	.handler(async ({ data }) => {
 		const accessToken = await requireAccessToken();
-		const query = data.q.trim()
-			? `?q=${encodeURIComponent(data.q.trim())}`
-			: "";
+		const params = new URLSearchParams();
+		if (data.q.trim()) params.set("q", data.q.trim());
+		if (data.limit) params.set("limit", String(data.limit));
+		const qs = params.toString() ? `?${params.toString()}` : "";
 		return backendRequest<HashtagSuggestion[]>(
-			`/hashtags/suggestions${query}`,
+			`/hashtags/suggestions${qs}`,
 			{ bearerToken: accessToken },
 		);
 	});
