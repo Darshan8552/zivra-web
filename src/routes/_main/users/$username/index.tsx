@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { UserProfileView } from "#/components/UserProfileView.tsx";
 import { userProfileQueryOptions } from "#/lib/users/users.hooks.ts";
+import { currentUserQueryOptions } from "#/lib/query.options.ts";
 
 export const Route = createFileRoute("/_main/users/$username/")({
   component: UserProfilePage,
@@ -16,6 +17,7 @@ function UserProfilePage() {
   const { data: user, isLoading, isError } = useQuery(
     userProfileQueryOptions(username),
   );
+  const { data: currentUser } = useQuery(currentUserQueryOptions);
 
   if (isLoading) {
     return (
@@ -48,5 +50,6 @@ function UserProfilePage() {
     );
   }
 
-  return <UserProfileView user={user} isSelf={false} />;
+  const isSelf = currentUser?.id === user.id || currentUser?.username === user.username;
+  return <UserProfileView user={user} isSelf={isSelf} />;
 }

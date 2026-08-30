@@ -90,6 +90,19 @@ export const updateProfileFn = createServerFn({ method: "POST" })
 		});
 	});
 
+export const updatePrivacyFn = createServerFn({ method: "POST" })
+	.validator((data: { isPrivate: boolean }) => data)
+	.handler(async ({ data }) => {
+		const accessToken = await requireAccessToken();
+		const fd = new FormData();
+		fd.append("isPrivate", String(data.isPrivate));
+		const result = await backendMultipartRequest<AuthUser>("/users/me", fd, {
+			method: "PATCH",
+			bearerToken: accessToken,
+		});
+		return result;
+	});
+
 export const getUserFollowersFn = createServerFn({ method: "GET" })
 	.validator((data: { username: string; cursor?: string }) => data)
 	.handler(async ({ data }) => {

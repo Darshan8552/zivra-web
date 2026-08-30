@@ -52,7 +52,7 @@ export function clearAuthCookies(): void {
     "refresh_token",
     "__Host-refresh_token",
   ];
-  // Delete with both Secure true and false to catch stale variants from pre-fix (plain Secure:false vs __Host Secure:true)
+
   for (const name of [...new Set(names)]) {
     deleteCookie(name, { ...baseOpts, secure: true });
     deleteCookie(name, { ...baseOpts, secure: false });

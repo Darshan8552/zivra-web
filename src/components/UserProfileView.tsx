@@ -1,21 +1,24 @@
 import {
+  Bookmark,
   Calendar,
   Film,
   Grid,
   LinkIcon,
   Lock,
   MapPin,
+  MessageCircle,
   Settings,
   Tag,
   UserPlus,
 } from "lucide-react";
 import { useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import {
   type ProfilePostsTab,
   useProfilePosts,
   useToggleFollow,
 } from "#/lib/users/users.hooks.ts";
+import { useCreateConversation } from "#/lib/chat/chat.hooks.ts";
 import type { UserProfile } from "#/lib/users/users.types.ts";
 
 const tabs: { id: ProfilePostsTab; label: string; icon: typeof Grid }[] = [
@@ -41,6 +44,19 @@ export function UserProfileView({
   const canViewPosts = isSelf || !user.isPrivate || user.isFollowing;
   const postsQuery = useProfilePosts(user.username, tab, canViewPosts);
   const toggleFollow = useToggleFollow();
+  const createConversation = useCreateConversation();
+  const navigate = useNavigate();
+
+  const handleMessage = () => {
+    createConversation.mutate(
+      { participantIds: [user.id] },
+      {
+        onSuccess: (conv) => {
+          navigate({ to: '/chat', search: { conversationId: conv.id } as unknown as never });
+        },
+      },
+    );
+  };
 
   const items = postsQuery.data?.pages.flatMap((page) => page.items) ?? [];
   const isEmpty = !postsQuery.isLoading && items.length === 0;
@@ -57,7 +73,7 @@ export function UserProfileView({
     <div>
       <div className="px-4 sm:px-6 lg:px-10 pt-10 sm:pt-16">
         <div className="max-w-4xl mx-auto">
-          {/* Avatar + actions */}
+          {}
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             {user.avatarUrl ? (
               <img
@@ -78,32 +94,52 @@ export function UserProfileView({
                   >
                     Edit profile
                   </Link>
-                  <button
-                    type="button"
+                  <Link
+                    to="/bookmarks"
+                    data-testid="profile-bookmarks-btn"
+                    className="h-11 w-11 rounded-full border border-border flex items-center justify-center hover:border-foreground transition-colors duration-200"
+                  >
+                    <Bookmark size={16} strokeWidth={1.75} />
+                  </Link>
+                  <Link
+                    to="/settings"
+                    search={{ tab: "privacy" }}
                     data-testid="profile-settings-btn"
                     className="h-11 w-11 rounded-full border border-border flex items-center justify-center hover:border-foreground transition-colors duration-200"
                   >
                     <Settings size={16} strokeWidth={1.75} />
-                  </button>
+                  </Link>
                 </>
               ) : (
-                <button
-                  type="button"
-                  data-testid="profile-follow-btn"
-                  onClick={() => toggleFollow.mutate(user.username)}
-                  disabled={toggleFollow.isPending}
-                  className="px-5 h-11 rounded-full bg-foreground text-background font-semibold text-sm flex items-center gap-1.5 hover:bg-accent hover:text-accent-foreground transition-colors duration-200 disabled:opacity-60"
-                >
-                  {!user.isFollowing && user.followStatus !== "PENDING" && (
-                    <UserPlus size={15} strokeWidth={2} />
-                  )}
-                  {followLabel}
-                </button>
+                <>
+                  <button
+                    type="button"
+                    data-testid="profile-follow-btn"
+                    onClick={() => toggleFollow.mutate(user.username)}
+                    disabled={toggleFollow.isPending}
+                    className="px-5 h-11 rounded-full bg-foreground text-background font-semibold text-sm flex items-center gap-1.5 hover:bg-accent hover:text-accent-foreground transition-colors duration-200 disabled:opacity-60"
+                  >
+                    {!user.isFollowing && user.followStatus !== "PENDING" && (
+                      <UserPlus size={15} strokeWidth={2} />
+                    )}
+                    {followLabel}
+                  </button>
+                  <button
+                    type="button"
+                    data-testid="profile-message-btn"
+                    onClick={handleMessage}
+                    disabled={createConversation.isPending}
+                    className="px-5 h-11 rounded-full bg-secondary text-foreground font-semibold text-sm flex items-center gap-1.5 hover:bg-accent hover:text-accent-foreground border border-transparent hover:border-border transition-colors duration-200 disabled:opacity-60"
+                  >
+                    <MessageCircle size={15} strokeWidth={2} />
+                    Message
+                  </button>
+                </>
               )}
             </div>
           </div>
 
-          {/* Info */}
+          {}
           <div className="mt-6">
             <h1 className="font-display font-bold text-4xl tracking-tight">
               {user.name}
@@ -173,7 +209,7 @@ export function UserProfileView({
             </div>
           </div>
 
-          {/* Tabs */}
+          {}
           <div className="mt-10 border-b border-border flex gap-2 overflow-x-auto no-scrollbar">
             {tabs.map((t) => (
               <button
@@ -196,7 +232,7 @@ export function UserProfileView({
             ))}
           </div>
 
-          {/* Content */}
+          {}
           <section className="mt-8 pb-16">
             {!canViewPosts ? (
               <div className="py-24 text-center border border-dashed border-border rounded-2xl">
@@ -248,10 +284,12 @@ export function UserProfileView({
                   {items.map((post) => {
                     const cover = post.media[0];
                     return (
-                      <div
+                      <Link
                         key={post.id}
+                        to="/posts/$postId"
+                        params={{ postId: post.id }}
                         data-testid={`profile-post-${post.id}`}
-                        className="relative aspect-square rounded-lg overflow-hidden group cursor-pointer bg-secondary"
+                        className="relative aspect-square rounded-lg overflow-hidden group cursor-pointer bg-secondary block"
                       >
                         {cover && (
                           <img
@@ -265,7 +303,7 @@ export function UserProfileView({
                             <Film size={12} strokeWidth={1.75} />
                           </span>
                         )}
-                      </div>
+                      </Link>
                     );
                   })}
                 </div>

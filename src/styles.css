@@ -1,0 +1,328 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Manrope:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+    /* Fonts */
+    --font-display: 'Outfit', system-ui, sans-serif;
+    --font-body: 'Manrope', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    --font-mono-alt: 'JetBrains Mono', monospace;
+
+    /* Radius */
+    --radius-lg: var(--radius);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-sm: calc(var(--radius) - 4px);
+
+    /* Colors */
+    --color-background: hsl(var(--background));
+    --color-foreground: hsl(var(--foreground));
+    --color-card: hsl(var(--card));
+    --color-card-foreground: hsl(var(--card-foreground));
+    --color-popover: hsl(var(--popover));
+    --color-popover-foreground: hsl(var(--popover-foreground));
+    --color-primary: hsl(var(--primary));
+    --color-primary-foreground: hsl(var(--primary-foreground));
+    --color-secondary: hsl(var(--secondary));
+    --color-secondary-foreground: hsl(var(--secondary-foreground));
+    --color-muted: hsl(var(--muted));
+    --color-muted-foreground: hsl(var(--muted-foreground));
+    --color-accent: hsl(var(--accent));
+    --color-accent-foreground: hsl(var(--accent-foreground));
+    --color-destructive: hsl(var(--destructive));
+    --color-destructive-foreground: hsl(var(--destructive-foreground));
+    --color-border: hsl(var(--border));
+    --color-input: hsl(var(--input));
+    --color-ring: hsl(var(--ring));
+    --color-surface: hsl(var(--surface));
+
+    /* Motion tokens — Jakub primary (200-500ms), Emil for micro (≤200ms) */
+    --ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+    --ease-decelerate: cubic-bezier(0, 0, 0, 1);
+    --ease-accelerate: cubic-bezier(0.3, 0, 1, 1);
+    --duration-micro: 160ms;
+    --duration-reveal: 380ms;
+    --duration-slow-reveal: 680ms;
+    --stagger-step: 42ms;
+
+    /* Animations */
+    --animate-accordion-down: accordion-down 0.2s var(--ease-standard);
+    --animate-accordion-up: accordion-up 0.2s var(--ease-standard);
+    --animate-marquee: marquee 40s linear infinite;
+    --animate-fade-up: fade-up 0.62s var(--ease-emphasized) forwards;
+    --animate-clip-reveal: clip-reveal 0.82s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+    --animate-shimmer: shimmer 2.2s ease-in-out infinite;
+}
+
+@layer base {
+    :root {
+        /* Light: warm sand + terracotta */
+        --background: 60 20% 96%;
+        --foreground: 0 0% 7%;
+        --card: 0 0% 100%;
+        --card-foreground: 0 0% 7%;
+        --popover: 0 0% 100%;
+        --popover-foreground: 0 0% 7%;
+        --primary: 0 0% 7%;
+        --primary-foreground: 60 20% 96%;
+        --secondary: 48 12% 92%;
+        --secondary-foreground: 0 0% 7%;
+        --muted: 48 12% 92%;
+        --muted-foreground: 60 4% 41%;
+        --accent: 355 78% 56%;
+        --accent-foreground: 0 0% 100%;
+        --destructive: 0 84% 60%;
+        --destructive-foreground: 0 0% 98%;
+        --border: 48 12% 89%;
+        --input: 48 12% 89%;
+        --ring: 355 78% 56%;
+        --radius: 0.75rem;
+        --surface: 0 0% 100%;
+    }
+
+    .dark {
+        /* Dark: void black + coral */
+        --background: 0 0% 5%;
+        --foreground: 0 0% 95%;
+        --card: 0 0% 10%;
+        --card-foreground: 0 0% 95%;
+        --popover: 0 0% 10%;
+        --popover-foreground: 0 0% 95%;
+        --primary: 0 0% 95%;
+        --primary-foreground: 0 0% 5%;
+        --secondary: 0 0% 12%;
+        --secondary-foreground: 0 0% 95%;
+        --muted: 0 0% 12%;
+        --muted-foreground: 0 0% 54%;
+        --accent: 0 100% 65%;
+        --accent-foreground: 0 0% 100%;
+        --destructive: 0 62% 45%;
+        --destructive-foreground: 0 0% 98%;
+        --border: 0 0% 15%;
+        --input: 0 0% 15%;
+        --ring: 0 100% 65%;
+        --surface: 0 0% 10%;
+    }
+
+    * {
+        @apply border-border;
+    }
+
+    html, body {
+        margin: 0;
+        padding: 0;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+        @apply bg-background text-foreground font-body;
+        font-feature-settings: "cv11", "ss01";
+    }
+
+    ::selection {
+        background: hsl(var(--accent));
+        color: hsl(var(--accent-foreground));
+    }
+}
+
+@keyframes accordion-down {
+    from { height: 0; }
+    to { height: var(--radix-accordion-content-height); }
+}
+
+@keyframes accordion-up {
+    from { height: var(--radix-accordion-content-height); }
+    to { height: 0; }
+}
+
+@keyframes marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+@keyframes fade-up {
+    from { opacity: 0; transform: translateY(12px); filter: blur(4px); }
+    to { opacity: 1; transform: translateY(0); filter: blur(0px); }
+}
+
+@keyframes clip-reveal {
+    from { clip-path: inset(0 0 100% 0); }
+    to { clip-path: inset(0 0 0 0); }
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(200%); }
+}
+
+@keyframes magnetic-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-2px); }
+}
+
+@layer utilities {
+    .font-display {
+        font-family: var(--font-display);
+        font-feature-settings: "ss01", "ss02";
+    }
+
+    .font-body {
+        font-family: var(--font-body);
+    }
+
+    .font-mono-alt {
+        font-family: var(--font-mono-alt);
+    }
+
+    .overline {
+        text-transform: uppercase;
+        letter-spacing: 0.2em;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+
+    .hairline {
+        border-width: 1px;
+        border-style: solid;
+    }
+
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    .custom-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
+    .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+    .custom-scroll::-webkit-scrollbar-thumb {
+        background: hsl(var(--border));
+        border-radius: 4px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground)); }
+
+    .fade-up {
+        animation: fade-up 0.62s var(--ease-emphasized) forwards;
+        animation-fill-mode: both;
+        opacity: 0;
+        will-change: transform, opacity, filter;
+    }
+
+    /* Motion micro-interactions — transform/opacity only */
+    .pressable {
+        transition: transform var(--duration-micro) var(--ease-standard), opacity var(--duration-micro) var(--ease-standard), box-shadow var(--duration-micro) var(--ease-standard), background-color var(--duration-micro) var(--ease-standard), border-color var(--duration-micro) var(--ease-standard), color var(--duration-micro) var(--ease-standard);
+    }
+    .pressable:active {
+        transform: scale(0.97);
+    }
+    @media (hover: hover) and (pointer: fine) {
+        .pressable:hover {
+            transform: translateY(-1px);
+        }
+        .pressable:active {
+            transform: scale(0.97);
+        }
+    }
+
+    /* Nav underline via clip-path (no layout) */
+    .nav-link {
+        position: relative;
+    }
+    .nav-link::after {
+        content: "";
+        position: absolute;
+        left: 0; right: 0; bottom: -4px;
+        height: 1px;
+        background: currentColor;
+        clip-path: inset(0 100% 0 0);
+        transition: clip-path 220ms var(--ease-emphasized);
+        opacity: 0.85;
+    }
+    .nav-link:hover::after,
+    .nav-link:focus-visible::after {
+        clip-path: inset(0 0 0 0);
+    }
+
+    /* Arrow nudge for CTAs */
+    .cta-arrow {
+        transition: transform 200ms var(--ease-emphasized);
+        will-change: transform;
+    }
+    .group:hover .cta-arrow,
+    .group:focus-visible .cta-arrow {
+        transform: translateX(4px);
+    }
+
+    /* Marquee — pause on hover/focus, respects reduced-motion via media query below */
+    .animate-marquee:hover,
+    .animate-marquee:focus-within {
+        animation-play-state: paused;
+    }
+
+    /* Clip reveal utility */
+    .clip-reveal {
+        clip-path: inset(0 0 100% 0);
+        animation: clip-reveal 0.82s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+        animation-fill-mode: both;
+    }
+
+    /* Feature card hover — shadow instead of border jump (Jakub §3) */
+    .feature-card {
+        transition: transform 220ms var(--ease-emphasized), box-shadow 220ms var(--ease-emphasized), border-color 220ms var(--ease-emphasized);
+        will-change: transform;
+    }
+    @media (hover: hover) {
+        .feature-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 0 1px hsl(var(--border)), 0 8px 24px -12px hsl(var(--foreground) / 0.12), 0 4px 12px -8px hsl(var(--foreground) / 0.08);
+        }
+    }
+    .feature-card:active {
+        transform: scale(0.985);
+    }
+
+    /* Manifesto border draw */
+    .manifesto-rule {
+        position: relative;
+    }
+    .manifesto-rule::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 1px;
+        background: hsl(var(--border));
+        transform-origin: left;
+    }
+
+    /* Focus ring — keep visible, not obscured */
+    :focus-visible {
+        outline: 2px solid hsl(var(--ring));
+        outline-offset: 2px;
+    }
+
+    [data-debug-wrapper="true"] { display: contents !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+    .animate-marquee {
+        animation: none !important;
+        transform: none !important;
+    }
+    .clip-reveal {
+        clip-path: none !important;
+        animation: none !important;
+    }
+    .fade-up {
+        opacity: 1 !important;
+        filter: none !important;
+        transform: none !important;
+    }
+}

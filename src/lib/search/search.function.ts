@@ -39,6 +39,5 @@ export const getHashtagPostsFn = createServerFn({ method: "GET" })
     );
   });
 
-// Re-export for single-import convenience (actual impl lives in users/posts)
 export { searchUsersFn } from "#/lib/users/users.function.ts";
 export { suggestHashtagsFn } from "#/lib/posts/posts.function.ts";

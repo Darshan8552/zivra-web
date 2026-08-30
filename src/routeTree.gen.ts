@@ -17,12 +17,15 @@ import { Route as AuthResetPasswordIndexRouteImport } from './routes/_auth/reset
 import { Route as AuthSigninIndexRouteImport } from './routes/_auth/signin/index'
 import { Route as AuthSignupIndexRouteImport } from './routes/_auth/signup/index'
 import { Route as AuthVerifyEmailIndexRouteImport } from './routes/_auth/verify-email/index'
+import { Route as MainBookmarksIndexRouteImport } from './routes/_main/bookmarks/index'
 import { Route as MainChatIndexRouteImport } from './routes/_main/chat/index'
 import { Route as MainCreateIndexRouteImport } from './routes/_main/create/index'
 import { Route as MainFeedIndexRouteImport } from './routes/_main/feed/index'
 import { Route as MainNotificationsIndexRouteImport } from './routes/_main/notifications/index'
 import { Route as MainProfileIndexRouteImport } from './routes/_main/profile/index'
 import { Route as MainSearchIndexRouteImport } from './routes/_main/search/index'
+import { Route as MainSettingsIndexRouteImport } from './routes/_main/settings/index'
+import { Route as MainPostsPostIdIndexRouteImport } from './routes/_main/posts/$postId/index'
 import { Route as MainProfileEditIndexRouteImport } from './routes/_main/profile/edit/index'
 import { Route as MainUsersUsernameIndexRouteImport } from './routes/_main/users/$username/index'
 import { Route as MainUsersUsernameFollowersFollowingRouteImport } from './routes/_main/users/$username/followers-following'
@@ -65,6 +68,11 @@ const AuthVerifyEmailIndexRoute = AuthVerifyEmailIndexRouteImport.update({
   path: '/verify-email/',
   getParentRoute: () => AuthRouteRoute,
 } as any)
+const MainBookmarksIndexRoute = MainBookmarksIndexRouteImport.update({
+  id: '/bookmarks/',
+  path: '/bookmarks/',
+  getParentRoute: () => MainRouteRoute,
+} as any)
 const MainChatIndexRoute = MainChatIndexRouteImport.update({
   id: '/chat/',
   path: '/chat/',
@@ -95,6 +103,16 @@ const MainSearchIndexRoute = MainSearchIndexRouteImport.update({
   path: '/search/',
   getParentRoute: () => MainRouteRoute,
 } as any)
+const MainSettingsIndexRoute = MainSettingsIndexRouteImport.update({
+  id: '/settings/',
+  path: '/settings/',
+  getParentRoute: () => MainRouteRoute,
+} as any)
+const MainPostsPostIdIndexRoute = MainPostsPostIdIndexRouteImport.update({
+  id: '/posts/$postId/',
+  path: '/posts/$postId/',
+  getParentRoute: () => MainRouteRoute,
+} as any)
 const MainProfileEditIndexRoute = MainProfileEditIndexRouteImport.update({
   id: '/profile/edit/',
   path: '/profile/edit/',
@@ -119,13 +137,16 @@ export interface FileRoutesByFullPath {
   '/signin/': typeof AuthSigninIndexRoute
   '/signup/': typeof AuthSignupIndexRoute
   '/verify-email/': typeof AuthVerifyEmailIndexRoute
+  '/bookmarks/': typeof MainBookmarksIndexRoute
   '/chat/': typeof MainChatIndexRoute
   '/create/': typeof MainCreateIndexRoute
   '/feed/': typeof MainFeedIndexRoute
   '/notifications/': typeof MainNotificationsIndexRoute
   '/profile/': typeof MainProfileIndexRoute
   '/search/': typeof MainSearchIndexRoute
+  '/settings/': typeof MainSettingsIndexRoute
   '/users/$username/followers-following': typeof MainUsersUsernameFollowersFollowingRoute
+  '/posts/$postId/': typeof MainPostsPostIdIndexRoute
   '/profile/edit/': typeof MainProfileEditIndexRoute
   '/users/$username/': typeof MainUsersUsernameIndexRoute
 }
@@ -136,13 +157,16 @@ export interface FileRoutesByTo {
   '/signin': typeof AuthSigninIndexRoute
   '/signup': typeof AuthSignupIndexRoute
   '/verify-email': typeof AuthVerifyEmailIndexRoute
+  '/bookmarks': typeof MainBookmarksIndexRoute
   '/chat': typeof MainChatIndexRoute
   '/create': typeof MainCreateIndexRoute
   '/feed': typeof MainFeedIndexRoute
   '/notifications': typeof MainNotificationsIndexRoute
   '/profile': typeof MainProfileIndexRoute
   '/search': typeof MainSearchIndexRoute
+  '/settings': typeof MainSettingsIndexRoute
   '/users/$username/followers-following': typeof MainUsersUsernameFollowersFollowingRoute
+  '/posts/$postId': typeof MainPostsPostIdIndexRoute
   '/profile/edit': typeof MainProfileEditIndexRoute
   '/users/$username': typeof MainUsersUsernameIndexRoute
 }
@@ -156,13 +180,16 @@ export interface FileRoutesById {
   '/_auth/signin/': typeof AuthSigninIndexRoute
   '/_auth/signup/': typeof AuthSignupIndexRoute
   '/_auth/verify-email/': typeof AuthVerifyEmailIndexRoute
+  '/_main/bookmarks/': typeof MainBookmarksIndexRoute
   '/_main/chat/': typeof MainChatIndexRoute
   '/_main/create/': typeof MainCreateIndexRoute
   '/_main/feed/': typeof MainFeedIndexRoute
   '/_main/notifications/': typeof MainNotificationsIndexRoute
   '/_main/profile/': typeof MainProfileIndexRoute
   '/_main/search/': typeof MainSearchIndexRoute
+  '/_main/settings/': typeof MainSettingsIndexRoute
   '/_main/users/$username/followers-following': typeof MainUsersUsernameFollowersFollowingRoute
+  '/_main/posts/$postId/': typeof MainPostsPostIdIndexRoute
   '/_main/profile/edit/': typeof MainProfileEditIndexRoute
   '/_main/users/$username/': typeof MainUsersUsernameIndexRoute
 }
@@ -175,13 +202,16 @@ export interface FileRouteTypes {
     | '/signin/'
     | '/signup/'
     | '/verify-email/'
+    | '/bookmarks/'
     | '/chat/'
     | '/create/'
     | '/feed/'
     | '/notifications/'
     | '/profile/'
     | '/search/'
+    | '/settings/'
     | '/users/$username/followers-following'
+    | '/posts/$postId/'
     | '/profile/edit/'
     | '/users/$username/'
   fileRoutesByTo: FileRoutesByTo
@@ -192,13 +222,16 @@ export interface FileRouteTypes {
     | '/signin'
     | '/signup'
     | '/verify-email'
+    | '/bookmarks'
     | '/chat'
     | '/create'
     | '/feed'
     | '/notifications'
     | '/profile'
     | '/search'
+    | '/settings'
     | '/users/$username/followers-following'
+    | '/posts/$postId'
     | '/profile/edit'
     | '/users/$username'
   id:
@@ -211,13 +244,16 @@ export interface FileRouteTypes {
     | '/_auth/signin/'
     | '/_auth/signup/'
     | '/_auth/verify-email/'
+    | '/_main/bookmarks/'
     | '/_main/chat/'
     | '/_main/create/'
     | '/_main/feed/'
     | '/_main/notifications/'
     | '/_main/profile/'
     | '/_main/search/'
+    | '/_main/settings/'
     | '/_main/users/$username/followers-following'
+    | '/_main/posts/$postId/'
     | '/_main/profile/edit/'
     | '/_main/users/$username/'
   fileRoutesById: FileRoutesById
@@ -286,6 +322,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthVerifyEmailIndexRouteImport
       parentRoute: typeof AuthRouteRoute
     }
+    '/_main/bookmarks/': {
+      id: '/_main/bookmarks/'
+      path: '/bookmarks'
+      fullPath: '/bookmarks/'
+      preLoaderRoute: typeof MainBookmarksIndexRouteImport
+      parentRoute: typeof MainRouteRoute
+    }
     '/_main/chat/': {
       id: '/_main/chat/'
       path: '/chat'
@@ -326,6 +369,20 @@ declare module '@tanstack/react-router' {
       path: '/search'
       fullPath: '/search/'
       preLoaderRoute: typeof MainSearchIndexRouteImport
+      parentRoute: typeof MainRouteRoute
+    }
+    '/_main/settings/': {
+      id: '/_main/settings/'
+      path: '/settings'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof MainSettingsIndexRouteImport
+      parentRoute: typeof MainRouteRoute
+    }
+    '/_main/posts/$postId/': {
+      id: '/_main/posts/$postId/'
+      path: '/posts/$postId'
+      fullPath: '/posts/$postId/'
+      preLoaderRoute: typeof MainPostsPostIdIndexRouteImport
       parentRoute: typeof MainRouteRoute
     }
     '/_main/profile/edit/': {
@@ -373,26 +430,32 @@ const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
 )
 
 interface MainRouteRouteChildren {
+  MainBookmarksIndexRoute: typeof MainBookmarksIndexRoute
   MainChatIndexRoute: typeof MainChatIndexRoute
   MainCreateIndexRoute: typeof MainCreateIndexRoute
   MainFeedIndexRoute: typeof MainFeedIndexRoute
   MainNotificationsIndexRoute: typeof MainNotificationsIndexRoute
   MainProfileIndexRoute: typeof MainProfileIndexRoute
   MainSearchIndexRoute: typeof MainSearchIndexRoute
+  MainSettingsIndexRoute: typeof MainSettingsIndexRoute
   MainUsersUsernameFollowersFollowingRoute: typeof MainUsersUsernameFollowersFollowingRoute
+  MainPostsPostIdIndexRoute: typeof MainPostsPostIdIndexRoute
   MainProfileEditIndexRoute: typeof MainProfileEditIndexRoute
   MainUsersUsernameIndexRoute: typeof MainUsersUsernameIndexRoute
 }
 
 const MainRouteRouteChildren: MainRouteRouteChildren = {
+  MainBookmarksIndexRoute: MainBookmarksIndexRoute,
   MainChatIndexRoute: MainChatIndexRoute,
   MainCreateIndexRoute: MainCreateIndexRoute,
   MainFeedIndexRoute: MainFeedIndexRoute,
   MainNotificationsIndexRoute: MainNotificationsIndexRoute,
   MainProfileIndexRoute: MainProfileIndexRoute,
   MainSearchIndexRoute: MainSearchIndexRoute,
+  MainSettingsIndexRoute: MainSettingsIndexRoute,
   MainUsersUsernameFollowersFollowingRoute:
     MainUsersUsernameFollowersFollowingRoute,
+  MainPostsPostIdIndexRoute: MainPostsPostIdIndexRoute,
   MainProfileEditIndexRoute: MainProfileEditIndexRoute,
   MainUsersUsernameIndexRoute: MainUsersUsernameIndexRoute,
 }
@@ -409,3 +472,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}

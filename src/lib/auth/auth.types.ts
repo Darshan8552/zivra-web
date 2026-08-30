@@ -1,23 +1,26 @@
 export interface AuthUser {
-    id: string;
-    email: string;
-    username: string;
-    name: string;
-    avatarUrl: string | null;
-    bio: string | null;
-    isVerified: boolean;
-    isPrivate: boolean;
-    role: string;
-    status: string;
-    followerCount: number;
-    followingCount: number;
-    emailVerifiedAt: string | null;
-    createdAt: string;
+  id: string;
+  email: string;
+  username: string;
+  name: string;
+  bio: string | null;
+  avatarUrl: string | null;
+  website: string | null;
+  location: string | null;
+  isVerified: boolean;
+  isPrivate: boolean;
+  followerCount: number;
+  followingCount: number;
+  postCount: number;
+  createdAt: string;
+  isOwnProfile: boolean;
+  isFollowing: boolean;
+  followStatus: string | null;
 }
 
 export interface AuthTokens {
-    accessToken: string;
-    refreshToken: string;
+  accessToken: string;
+  refreshToken: string;
 }
 
-export type ResendableOtpPurpose = "REGISTER" | "FORGOT_PASSWORD";
+export const PURPOSES = ["REGISTER", "FORGOT_PASSWORD"] as const;

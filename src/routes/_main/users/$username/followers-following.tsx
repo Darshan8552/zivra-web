@@ -9,6 +9,7 @@ export const Route = createFileRoute(
 	validateSearch: (search) => ({
 		tab: search.tab === "following" ? "following" : "followers",
 	}),
+	component: FollowersFollowingPage,
 	loader: ({ context, params }) =>
 		context.queryClient.ensureQueryData(
 			userProfileQueryOptions(params.username),
@@ -74,7 +75,8 @@ function FollowersFollowingPage() {
 						Follow this account to see their followers and following
 					</p>
 					<Link
-						to={`/users/${username}`}
+						to="/users/$username"
+						params={{ username }}
 						className="mt-6 inline-block text-sm font-semibold text-accent hover:underline"
 					>
 						Back to profile
@@ -130,7 +132,7 @@ function FollowersFollowingPage() {
 								>
 									{tab.label}
 									{activeTab === tab.id && (
-										<span className="absolute bottom-[-1px] left-0 right-0 h-0.5 bg-accent" />
+										<span className="absolute -bottom-px left-0 right-0 h-0.5 bg-accent" />
 									)}
 								</button>
 							))}
@@ -148,5 +150,3 @@ function FollowersFollowingPage() {
 		</div>
 	);
 }
-
-export default FollowersFollowingPage;

@@ -35,13 +35,11 @@ function SearchPage() {
   const qDebounced = useDebouncedValue(qInput.trim(), 300);
   const activeTab = search.tab as SearchTab;
 
-  // Keep input in sync with URL (back button, shared link)
   useEffect(() => {
     if ((search.q ?? "") !== qInput) setQInput(search.q ?? "");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [search.q]);
 
-  // Sync debounced q to URL
   useEffect(() => {
     const current = search.q ?? "";
     if (qDebounced === current) return;
@@ -66,10 +64,8 @@ function SearchPage() {
   const tagsQuery = useHashtagSuggestions(qDebounced, 12);
   const postsQuery = useSearchPosts(qDebounced, 12);
 
-  // Keep for future generic loading; currently each tab handles its own query
   void (activeTab === "people" ? peopleQuery : activeTab === "tags" ? tagsQuery : postsQuery);
 
-  // For posts infinite scroll sentinel
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const hasNextPage =
     activeTab === "posts"
@@ -161,7 +157,7 @@ function SearchPage() {
             />
           </div>
 
-          {/* Tabs — only when searching */}
+          {}
           {isSearching && (
             <div className="mt-6 border-b border-border">
               <div className="flex gap-2 overflow-x-auto no-scrollbar" role="tablist">
@@ -192,7 +188,7 @@ function SearchPage() {
 
         {!isSearching ? (
           <>
-            {/* Trending tags — real */}
+            {}
             <section className="mb-12">
               <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-2">
@@ -260,7 +256,7 @@ function SearchPage() {
               )}
             </section>
 
-            {/* People you may know — real with empty text */}
+            {}
             <section className="mb-12">
               <p className="overline text-muted-foreground mb-5">People you may know</p>
               {suggestionsQuery.isLoading ? (
@@ -322,7 +318,7 @@ function SearchPage() {
               )}
             </section>
 
-            {/* Editorial picks — real trending posts */}
+            {}
             <section>
               <p className="overline text-muted-foreground mb-5">Editorial picks · this week</p>
               {trendingPostsQuery.isLoading ? (
@@ -382,7 +378,7 @@ function SearchPage() {
           </>
         ) : (
           <section>
-            {/* Results header */}
+            {}
             <div className="flex items-center justify-between mb-6">
               <p className="text-sm text-muted-foreground">
                 Results for{" "}
@@ -402,7 +398,7 @@ function SearchPage() {
               </button>
             </div>
 
-            {/* People tab */}
+            {}
             {activeTab === "people" && (
               <>
                 {peopleQuery.isLoading ? (
@@ -494,7 +490,7 @@ function SearchPage() {
               </>
             )}
 
-            {/* Tags tab */}
+            {}
             {activeTab === "tags" && (
               <>
                 {tagsQuery.isLoading ? (
@@ -540,7 +536,7 @@ function SearchPage() {
               </>
             )}
 
-            {/* Posts tab */}
+            {}
             {activeTab === "posts" && (
               <>
                 {postsQuery.isLoading ? (

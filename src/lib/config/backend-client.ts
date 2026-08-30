@@ -1,4 +1,4 @@
-import { getBackendUrl } from "#/lib/auth/config.ts";
+import { getBackendUrl } from "#/lib/config/config.ts";
 
 interface BackendRequestOptions {
   method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
@@ -41,9 +41,8 @@ export async function backendRequest<T>(
 ): Promise<T> {
   const { method = "GET", body, bearerToken, asServerClient = true } = options;
 
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-  };
+  const headers: Record<string, string> = {};
+  if (body !== undefined) headers["Content-Type"] = "application/json";
   if (bearerToken) headers.Authorization = `Bearer ${bearerToken}`;
   if (asServerClient) headers["x-Device-Type"] = "UNKNOWN";
 
@@ -53,6 +52,52 @@ export async function backendRequest<T>(
       method,
       headers,
       body: body !== undefined ? JSON.stringify(body) : undefined,
+    });
+  } catch (e) {
+    console.log(e);
+    throw new BackendApiError(
+      {
+        statusCode: 503,
+        message: "Could not reach the server. Please try again.",
+      },
+      503,
+    );
+  }
+
+  const payload = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    const errorPayload: BackendErrorPayload = payload ?? {
+      statusCode: res.status,
+      message: res.statusText,
+    };
+    throw new BackendApiError(errorPayload, res.status);
+  }
+
+  const envelope = payload as BackendSuccessEnvelope<T> | null;
+  return (envelope?.data ?? payload) as T;
+}
+
+export async function backendMultipartRequest<T>(
+  path: string,
+  formData: FormData,
+  options: Pick<
+    BackendRequestOptions,
+    "method" | "bearerToken" | "asServerClient"
+  > = {},
+): Promise<T> {
+  const { method = "POST", bearerToken, asServerClient = true } = options;
+
+  const headers: Record<string, string> = {};
+  if (bearerToken) headers.Authorization = `Bearer ${bearerToken}`;
+  if (asServerClient) headers["x-Device-Type"] = "UNKNOWN";
+
+  let res: Response;
+  try {
+    res = await fetch(`${getBackendUrl()}${path}`, {
+      method,
+      headers,
+      body: formData,
     });
   } catch (e) {
     console.log(e);

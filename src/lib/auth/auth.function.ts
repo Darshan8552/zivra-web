@@ -114,7 +114,7 @@ export const signOutFn = createServerFn({ method: "POST" }).handler(
           method: "POST",
           bearerToken: token,
         }).catch(() => {
-          // ignore backend logout errors — still clear local cookies
+
         });
       }
     } finally {

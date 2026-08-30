@@ -19,6 +19,8 @@ interface MyRouterContext {
   queryClient: QueryClient;
 }
 
+const SITE_URL = import.meta.env.VITE_SITE_URL ?? "https://zivra.app";
+
 export const Route = createRootRouteWithContext<MyRouterContext>()({
   head: () => ({
     meta: [
@@ -40,11 +42,59 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         name: "theme-color",
         content: "#000000",
       },
+      {
+        property: "og:title",
+        content: "Zivra — Social",
+      },
+      {
+        property: "og:description",
+        content: "Zivra — share moments, follow creators, discover. A production-grade social feed.",
+      },
+      {
+        property: "og:image",
+        content: `${SITE_URL}/og-image.png`,
+      },
+      {
+        property: "og:type",
+        content: "website",
+      },
+      {
+        property: "og:url",
+        content: SITE_URL,
+      },
+      {
+        property: "og:site_name",
+        content: "Zivra",
+      },
+      {
+        property: "og:locale",
+        content: "en_US",
+      },
+      {
+        name: "twitter:card",
+        content: "summary_large_image",
+      },
+      {
+        name: "twitter:title",
+        content: "Zivra — Social",
+      },
+      {
+        name: "twitter:description",
+        content: "Zivra — share moments, follow creators, discover. A production-grade social feed.",
+      },
+      {
+        name: "twitter:image",
+        content: `${SITE_URL}/og-image.png`,
+      },
     ],
     links: [
       {
         rel: "stylesheet",
         href: appCss,
+      },
+      {
+        rel: "canonical",
+        href: SITE_URL,
       },
     ],
   }),
@@ -89,18 +139,20 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body>
         <ThemeProvider>{children}</ThemeProvider>
         <Toaster richColors />
-        <TanStackDevtools
-          config={{
-            position: "bottom-right",
-          }}
-          plugins={[
-            {
-              name: "Tanstack Router",
-              render: <TanStackRouterDevtoolsPanel />,
-            },
-            TanStackQueryDevtools,
-          ]}
-        />
+        {import.meta.env.DEV && (
+          <TanStackDevtools
+            config={{
+              position: "bottom-right",
+            }}
+            plugins={[
+              {
+                name: "Tanstack Router",
+                render: <TanStackRouterDevtoolsPanel />,
+              },
+              TanStackQueryDevtools,
+            ]}
+          />
+        )}
         <Scripts />
       </body>
     </html>

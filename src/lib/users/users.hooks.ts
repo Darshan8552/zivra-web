@@ -15,6 +15,7 @@ import {
 	getUserProfileFn,
 	getUserTaggedPostsFn,
 	toggleFollowFn,
+	updatePrivacyFn,
 	updateProfileFn,
 } from "#/lib/users/users.function.ts";
 import { getErrorMessage } from "../auth/auth.hooks";
@@ -62,6 +63,17 @@ export function useToggleFollow() {
 			void queryClient.invalidateQueries({
 				queryKey: ["users", username, "profile"],
 			});
+			void queryClient.invalidateQueries({
+				queryKey: ["users", "suggestions"],
+			});
+			void queryClient.invalidateQueries({ queryKey: ["feed"] });
+			void queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+			void queryClient.invalidateQueries({
+				queryKey: ["users", username, "followers"],
+			});
+			void queryClient.invalidateQueries({
+				queryKey: ["users", username, "following"],
+			});
 		},
 		onError: (error) => toast.error(getErrorMessage(error)),
 	});
@@ -76,6 +88,25 @@ export function useUpdateProfile() {
 			void queryClient.invalidateQueries({
 				queryKey: ["users", user.username],
 			});
+		},
+	});
+}
+
+export function useTogglePrivate() {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: (isPrivate: boolean) => {
+			return updatePrivacyFn({ data: { isPrivate } });
+		},
+		onSuccess: (user) => {
+			queryClient.setQueryData(currentUserQueryOptions.queryKey, user);
+			void queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+			void queryClient.invalidateQueries({ queryKey: ["users", user.username] });
+			void queryClient.invalidateQueries({ queryKey: ["feed"] });
+			toast.success(user.isPrivate ? "Account is now private" : "Account is now public");
+		},
+		onError: (error) => {
+			toast.error(getErrorMessage(error));
 		},
 	});
 }
