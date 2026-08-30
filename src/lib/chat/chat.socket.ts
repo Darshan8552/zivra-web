@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { getChatSocket } from './ws-client';
+import type { Socket } from 'socket.io-client';
+import { getAuthenticatedChatSocket } from './ws-client';
 
 export interface ChatMessage {
   id: string;
@@ -16,59 +17,89 @@ export function useChatSocket(conversationId?: string) {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    const socket = getChatSocket();
+    let socket: Socket | null = null;
+    let cancelled = false;
 
-    const onMessageNew = (message: ChatMessage) => {
-      if (conversationId && message.conversationId !== conversationId) {
-        // Still invalidate conversations list for inbox preview
+    const setup = async () => {
+      const s = await getAuthenticatedChatSocket();
+      if (cancelled || !s) return;
+      socket = s;
+
+      const onMessageNew = (message: ChatMessage) => {
+        if (conversationId && message.conversationId !== conversationId) {
+          void queryClient.invalidateQueries({ queryKey: ['conversations'] });
+          return;
+        }
+        const key = ['conversations', conversationId, 'messages'] as const;
+        void queryClient.invalidateQueries({ queryKey: key });
         void queryClient.invalidateQueries({ queryKey: ['conversations'] });
-        return;
-      }
-
-      // Append to messages cache if exists
-      const key = ['conversations', conversationId, 'messages'] as const;
-      // Generic update: invalidate to refetch; optimistic append could be here
-      void queryClient.invalidateQueries({ queryKey: key });
-      void queryClient.invalidateQueries({ queryKey: ['conversations'] });
-      void queryClient.invalidateQueries({ queryKey: ['conversations', conversationId] });
-    };
-
-    const onConversationUpdated = () => {
-      void queryClient.invalidateQueries({ queryKey: ['conversations'] });
-    };
-
-    const onConversationRead = () => {
-      void queryClient.invalidateQueries({ queryKey: ['conversations'] });
-      if (conversationId) {
         void queryClient.invalidateQueries({ queryKey: ['conversations', conversationId] });
-      }
+      };
+
+      const onConversationUpdated = () => {
+        void queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      };
+
+      const onConversationRead = () => {
+        void queryClient.invalidateQueries({ queryKey: ['conversations'] });
+        if (conversationId) {
+          void queryClient.invalidateQueries({ queryKey: ['conversations', conversationId] });
+        }
+      };
+
+      const onMessageDeleted = () => {
+        if (conversationId) {
+          void queryClient.invalidateQueries({ queryKey: ['conversations', conversationId, 'messages'] });
+        }
+      };
+
+      const onUnauthorized = (payload: unknown) => {
+        console.warn('[chat socket] unauthorized', payload);
+      };
+
+      const onConnect = () => console.log('[chat socket] connected', socket?.id);
+      const onDisconnect = (reason: string) => console.log('[chat socket] disconnected', reason);
+      const onConnectError = (err: Error) => console.warn('[chat socket] connect_error', err.message);
+
+      socket.on('message:new', onMessageNew);
+      socket.on('conversation:updated', onConversationUpdated);
+      socket.on('conversation:read', onConversationRead);
+      socket.on('message:deleted', onMessageDeleted);
+      socket.on('unauthorized', onUnauthorized);
+      socket.on('connect', onConnect);
+      socket.on('disconnect', onDisconnect);
+      socket.on('connect_error', onConnectError);
+
+      // Store handlers for cleanup via closure
+      (socket as unknown as Record<string, unknown>).__handlers = {
+        onMessageNew,
+        onConversationUpdated,
+        onConversationRead,
+        onMessageDeleted,
+        onUnauthorized,
+        onConnect,
+        onDisconnect,
+        onConnectError,
+      };
     };
 
-    const onMessageDeleted = () => {
-      if (conversationId) {
-        void queryClient.invalidateQueries({ queryKey: ['conversations', conversationId, 'messages'] });
-      }
-    };
-
-    const onUnauthorized = (payload: unknown) => {
-      console.warn('[chat socket] unauthorized', payload);
-    };
-
-    socket.on('message:new', onMessageNew);
-    socket.on('conversation:updated', onConversationUpdated);
-    socket.on('conversation:read', onConversationRead);
-    socket.on('message:deleted', onMessageDeleted);
-    socket.on('unauthorized', onUnauthorized);
-
-    socket.on('connect', () => console.log('[chat socket] connected', socket.id));
-    socket.on('disconnect', (reason) => console.log('[chat socket] disconnected', reason));
+    void setup();
 
     return () => {
-      socket.off('message:new', onMessageNew);
-      socket.off('conversation:updated', onConversationUpdated);
-      socket.off('conversation:read', onConversationRead);
-      socket.off('message:deleted', onMessageDeleted);
-      socket.off('unauthorized', onUnauthorized);
+      cancelled = true;
+      if (socket) {
+        const h = (socket as unknown as Record<string, unknown>).__handlers as Record<string, (...args: unknown[]) => void> | undefined;
+        if (h) {
+          socket.off('message:new', h.onMessageNew);
+          socket.off('conversation:updated', h.onConversationUpdated);
+          socket.off('conversation:read', h.onConversationRead);
+          socket.off('message:deleted', h.onMessageDeleted);
+          socket.off('unauthorized', h.onUnauthorized);
+          socket.off('connect', h.onConnect);
+          socket.off('disconnect', h.onDisconnect);
+          socket.off('connect_error', h.onConnectError);
+        }
+      }
     };
   }, [conversationId, queryClient]);
 }
@@ -78,18 +109,25 @@ export function useChatInboxSocket() {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    const socket = getChatSocket();
-
+    let socket: Socket | null = null;
+    let cancelled = false;
     const handler = () => {
       void queryClient.invalidateQueries({ queryKey: ['conversations'] });
     };
-
-    socket.on('message:new', handler);
-    socket.on('conversation:updated', handler);
-
+    const setup = async () => {
+      const s = await getAuthenticatedChatSocket();
+      if (cancelled || !s) return;
+      socket = s;
+      socket.on('message:new', handler);
+      socket.on('conversation:updated', handler);
+    };
+    void setup();
     return () => {
-      socket.off('message:new', handler);
-      socket.off('conversation:updated', handler);
+      cancelled = true;
+      if (socket) {
+        socket.off('message:new', handler);
+        socket.off('conversation:updated', handler);
+      }
     };
   }, [queryClient]);
 }
@@ -110,7 +148,8 @@ export function usePresence() {
   const [presence, setPresence] = useState<Map<string, boolean>>(new Map());
 
   useEffect(() => {
-    const socket = getChatSocket();
+    let socket: Socket | null = null;
+    let cancelled = false;
     const handler = (payload: PresenceUpdate) => {
       setPresence((prev) => {
         const next = new Map(prev);
@@ -118,9 +157,16 @@ export function usePresence() {
         return next;
       });
     };
-    socket.on('presence:update', handler);
+    const setup = async () => {
+      const s = await getAuthenticatedChatSocket();
+      if (cancelled || !s) return;
+      socket = s;
+      socket.on('presence:update', handler);
+    };
+    void setup();
     return () => {
-      socket.off('presence:update', handler);
+      cancelled = true;
+      if (socket) socket.off('presence:update', handler);
     };
   }, []);
 
@@ -136,7 +182,8 @@ export function useTypingIndicator(conversationId?: string) {
       setTypingUsers([]);
       return;
     }
-    const socket = getChatSocket();
+    let socket: Socket | null = null;
+    let cancelled = false;
 
     const onStart = (payload: TypingUser) => {
       if (payload.conversationId !== conversationId) return;
@@ -163,12 +210,21 @@ export function useTypingIndicator(conversationId?: string) {
       }
     };
 
-    socket.on('typing:start', onStart);
-    socket.on('typing:stop', onStop);
+    const setup = async () => {
+      const s = await getAuthenticatedChatSocket();
+      if (cancelled || !s) return;
+      socket = s;
+      socket.on('typing:start', onStart);
+      socket.on('typing:stop', onStop);
+    };
+    void setup();
 
     return () => {
-      socket.off('typing:start', onStart);
-      socket.off('typing:stop', onStop);
+      cancelled = true;
+      if (socket) {
+        socket.off('typing:start', onStart);
+        socket.off('typing:stop', onStop);
+      }
       for (const t of timeoutsRef.current.values()) window.clearTimeout(t);
       timeoutsRef.current.clear();
     };

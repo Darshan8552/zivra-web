@@ -13,10 +13,21 @@ function getWsBaseUrl() {
 }
 
 export function getChatSocket(token?: string): Socket {
-  if (chatSocket?.connected) return chatSocket;
-  if (chatSocket) {
+  // If called without token but we already have an authenticated socket, reuse it
+  if (chatSocket?.connected && !token) return chatSocket;
+  // Reuse connected socket if same token
+  if (chatSocket?.connected && token) {
+    const currentToken = (chatSocket.auth as Record<string, unknown> | undefined)?.token as string | undefined;
+    if (currentToken === token) return chatSocket;
+    // token changed, disconnect and recreate
     chatSocket.removeAllListeners();
     chatSocket.disconnect();
+    chatSocket = null;
+  }
+  if (chatSocket && !chatSocket.connected) {
+    chatSocket.removeAllListeners();
+    chatSocket.disconnect();
+    chatSocket = null;
   }
 
   const base = getWsBaseUrl();
@@ -24,11 +35,33 @@ export function getChatSocket(token?: string): Socket {
   chatSocket = io(`${base}/chat`, {
     withCredentials: true,
     autoConnect: true,
-    transports: ['websocket', 'polling'],
+    transports: ['polling', 'websocket'],
     auth: token ? { token } : undefined,
   });
 
+  // Helpful debug for Vercel -> Render cross-site WS
+  if (typeof window !== 'undefined') {
+    chatSocket.on('connect_error', (err: Error) => {
+      console.warn('[chat socket] connect_error', err.message, { base: `${base}/chat`, hasToken: !!token });
+    });
+  }
+
   return chatSocket;
+}
+
+export async function getAuthenticatedChatSocket(): Promise<Socket | null> {
+  try {
+    const { getWsTokenFn } = await import('#/lib/auth/auth.function.ts');
+    const { token } = await getWsTokenFn();
+    if (!token) {
+      console.warn('[chat socket] no token — not connecting');
+      return null;
+    }
+    return getChatSocket(token);
+  } catch (e) {
+    console.warn('[chat socket] failed to get token', e);
+    return null;
+  }
 }
 
 export function disconnectChatSocket() {
