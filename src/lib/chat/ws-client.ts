@@ -3,13 +3,12 @@ import { io, type Socket } from 'socket.io-client';
 let chatSocket: Socket | null = null;
 
 function getWsBaseUrl() {
-  const backendUrl = (import.meta as unknown as Record<string, unknown>).env
-    ? (import.meta.env as Record<string, string>).VITE_BACKEND_URL ?? import.meta.env.BACKEND_URL
-    : undefined;
-
-  // Fallback to BACKEND_URL from .env parsing - vite exposes only VITE_ prefixed
-  // so we derive from known http://localhost:3001/api/v1
-  const raw = backendUrl ?? 'http://localhost:3001/api/v1';
+  // Vite only exposes VITE_ prefixed vars to the browser.
+  // VITE_BACKEND_URL must be set in Vercel env for prod (https://zivra-api.onrender.com/api/v1).
+  const viteUrl = (import.meta.env as Record<string, string | undefined>).VITE_BACKEND_URL;
+  // In dev, allow fallback to localhost if not set.
+  const isProd = (import.meta.env as Record<string, string | undefined>).PROD === 'true';
+  const raw = viteUrl ?? (isProd ? 'https://zivra-api.onrender.com/api/v1' : 'http://localhost:3001/api/v1');
   return raw.replace(/\/api\/v1\/?$/, '').replace(/\/api\/?$/, '');
 }
 

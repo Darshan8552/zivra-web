@@ -142,3 +142,10 @@ export const getCurrentUserFn = createServerFn({ method: "GET" }).handler(
     }
   },
 );
+
+export const getWsTokenFn = createServerFn({ method: "GET" }).handler(
+  async (): Promise<{ token: string | null }> => {
+    const token = await getValidAccessToken();
+    return { token };
+  },
+);
