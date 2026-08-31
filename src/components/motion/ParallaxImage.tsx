@@ -4,7 +4,7 @@ import {
 	useScroll,
 	useSpring,
 	useTransform,
-} from "framer-motion";
+} from "motion/react";
 import * as React from "react";
 
 export function ParallaxImage({

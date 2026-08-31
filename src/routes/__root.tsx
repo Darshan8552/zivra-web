@@ -15,6 +15,19 @@ import type { QueryClient } from "@tanstack/react-query";
 import { ThemeProvider } from "#/components/theme-provider.tsx";
 import { Toaster } from "@/components/ui/sonner";
 
+// Dev-only: suppress noisy upstream warnings that don't affect functionality
+// - framer-motion `motion() is deprecated. Use motion.create()` (internal factory, still works)
+// - motion `hsl(var(--accent) / 0)` animatable color (fixed in mode-toggle, but other libs may log)
+if (typeof window !== "undefined" && import.meta.env.DEV) {
+  const origWarn = console.warn.bind(console);
+  console.warn = (...args: unknown[]) => {
+    const first = typeof args[0] === "string" ? args[0] : "";
+    if (first.includes("motion() is deprecated")) return;
+    if (first.includes("is not an animatable")) return;
+    origWarn(...(args as [unknown, ...unknown[]]));
+  };
+}
+
 interface MyRouterContext {
   queryClient: QueryClient;
 }

@@ -1,4 +1,4 @@
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Moon, Sun } from "lucide-react";
 import * as React from "react";
 import { useTheme } from "#/components/theme-provider.tsx";
@@ -117,15 +117,9 @@ export function ModeToggle() {
 				)}
 			</AnimatePresence>
 
-			{/* Subtle accent ring on hover — matches project accent hover states */}
-			<motion.span
-				className="pointer-events-none absolute inset-0 rounded-full border border-transparent"
-				animate={{
-					borderColor: "hsl(var(--accent) / 0)",
-				}}
-				whileHover={{
-					borderColor: "hsl(var(--border))",
-				}}
+			{/* Subtle accent ring on hover — CSS only, no motion borderColor (hsl(var) not animatable) */}
+			<span
+				className="pointer-events-none absolute inset-0 rounded-full border border-transparent group-hover:border-border transition-colors duration-200"
 				aria-hidden
 			/>
 		</motion.button>

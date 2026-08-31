@@ -3,7 +3,7 @@ import {
 	useMotionValue,
 	useReducedMotion,
 	useSpring,
-} from "framer-motion";
+} from "motion/react";
 import * as React from "react";
 
 export function MagneticButton({
@@ -50,7 +50,7 @@ export function MagneticButton({
 		y.set(0);
 	};
 
-	const MotionComp = motion(As as React.ElementType);
+	const MotionComp = motion.create(As as React.ElementType);
 	return (
 		<MotionComp
 			ref={ref}

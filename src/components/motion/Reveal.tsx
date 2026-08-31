@@ -1,4 +1,4 @@
-import { motion, useReducedMotion, type Variants } from "framer-motion";
+import { motion, useReducedMotion, type Variants } from "motion/react";
 import type * as React from "react";
 
 // Jakub recipe: opacity + y 12 + blur 4 -> sharp, spring bounce 0
@@ -62,7 +62,7 @@ export function Reveal({
 			transition: { type: "spring", duration, bounce: 0, delay },
 		},
 	};
-	const MotionComp = motion(As as React.ElementType);
+	const MotionComp = motion.create(As as React.ElementType);
 	return (
 		<MotionComp
 			className={className}
