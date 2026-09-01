@@ -2,8 +2,11 @@ import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Loader2, UserPlus } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Avatar } from "#/components/ui/avatar.tsx";
 import { PostCard } from "#/components/PostCard.tsx";
-import { Stories } from "#/components/Stories.tsx";
+import { StoryBar } from "#/components/story/StoryBar.tsx";
+import { StoryViewer } from "#/components/story/StoryViewer.tsx";
+import { useStoriesFeed } from "#/lib/stories/stories.hooks.ts";
 import { useDiscoveryFeed, useFollowingFeed } from "#/lib/feed/feed.hooks.ts";
 import { currentUser } from "#/lib/mock.ts";
 import { currentUserQueryOptions } from "#/lib/query.options.ts";
@@ -58,6 +61,9 @@ function FeedPage() {
 	const suggestionsQuery = useSuggestions();
 	const toggleFollow = useToggleFollow();
 	const { data: me } = useQuery(currentUserQueryOptions);
+	const storiesFeed = useStoriesFeed(20);
+	const storyGroups = storiesFeed.data?.pages.flatMap((p) => p.groups) ?? [];
+	const [activeStoryGroup, setActiveStoryGroup] = useState<number | null>(null);
 	const [followState, setFollowState] = useState<
 		Record<string, "following" | "requested" | "idle">
 	>({});
@@ -164,7 +170,19 @@ function FeedPage() {
 								See all
 							</button>
 						</div>
-						<Stories />
+						<StoryBar
+							externalControl
+							onSelectGroup={(_g, idx) => setActiveStoryGroup(idx)}
+						/>
+						{activeStoryGroup !== null && storyGroups[activeStoryGroup] && (
+							<StoryViewer
+								open={activeStoryGroup !== null}
+								groups={storyGroups}
+								initialGroupIndex={activeStoryGroup}
+								onClose={() => setActiveStoryGroup(null)}
+								currentUserId={me?.id}
+							/>
+						)}
 					</section>
 
 					{}
@@ -285,10 +303,13 @@ function FeedPage() {
 				<aside className="hidden lg:block col-span-4 space-y-8 sticky top-8 self-start">
 					<div className="rounded-2xl border border-border p-6">
 						<div className="flex items-center gap-3">
-							<img
+							<Avatar
 								src={me?.avatarUrl ?? currentUser.avatar}
-								alt=""
-								className="h-12 w-12 rounded-xl object-cover"
+								name={me?.name ?? currentUser.name}
+								username={me?.username ?? currentUser.username}
+								size="md"
+								shape="square"
+								className="h-12 w-12 rounded-xl text-sm"
 							/>
 							<div className="flex-1 min-w-0">
 								<p className="font-display font-semibold tracking-tight">
@@ -336,10 +357,13 @@ function FeedPage() {
 											params={{ username: s.username }}
 											className="flex items-center gap-3 flex-1 min-w-0"
 										>
-											<img
-												src={avatarUrl(s)}
-												alt=""
-												className="h-10 w-10 rounded-lg object-cover"
+											<Avatar
+												src={s.avatarUrl}
+												name={s.name}
+												username={s.username}
+												size="md"
+												shape="square"
+												className="h-10 w-10 rounded-lg"
 											/>
 											<div className="flex-1 min-w-0">
 												<p className="font-display font-semibold text-sm tracking-tight truncate">
@@ -455,10 +479,12 @@ const SuggestionCard = ({
 			params={{ username: suggestion.username }}
 			className="flex flex-col items-center"
 		>
-			<img
-				src={avatarUrl(suggestion)}
-				alt=""
-				className="h-16 w-16 rounded-xl object-cover"
+			<Avatar
+				src={suggestion.avatarUrl}
+				name={suggestion.name}
+				username={suggestion.username}
+				size="lg"
+				shape="square"
 			/>
 			<p className="font-display font-semibold text-sm tracking-tight mt-3">
 				{suggestion.name}

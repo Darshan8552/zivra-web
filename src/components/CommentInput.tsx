@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { Avatar } from "#/components/ui/avatar.tsx";
 import { currentUserQueryOptions } from "#/lib/query.options.ts";
 
 export function CommentInput({
@@ -21,15 +22,13 @@ export function CommentInput({
 
 	return (
 		<div className="flex items-center gap-3 border-t border-border px-4 py-3">
-			{user?.avatarUrl ? (
-				<img
-					src={user.avatarUrl}
-					alt=""
-					className="h-8 w-8 rounded-full object-cover"
-				/>
-			) : (
-				<div className="h-8 w-8 rounded-full bg-secondary" />
-			)}
+			<Avatar
+				src={user?.avatarUrl}
+				name={user?.name}
+				username={user?.username}
+				size="sm"
+				shape="circle"
+			/>
 			<input
 				value={value}
 				onChange={(e) => setValue(e.target.value)}

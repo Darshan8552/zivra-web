@@ -8,6 +8,7 @@ import {
   Video,
   X,
 } from "lucide-react";
+import { Avatar } from "#/components/ui/avatar.tsx";
 import { HashtagPicker } from "#/components/main/create/HashtagPicker.tsx";
 import type { UserSuggestion } from "#/lib/posts/posts.types.ts";
 import { toast } from "sonner";
@@ -247,15 +248,13 @@ function CreatePostPage() {
 
           {}
           <div className="flex items-center gap-3">
-            {user.avatarUrl ? (
-              <img
-                src={user.avatarUrl}
-                alt=""
-                className="h-10 w-10 rounded-xl object-cover"
-              />
-            ) : (
-              <div className="h-10 w-10 rounded-xl bg-secondary" />
-            )}
+            <Avatar
+              src={user.avatarUrl}
+              name={user.name}
+              username={user.username}
+              size="md"
+              shape="square"
+            />
             <div>
               <p className="font-display font-semibold tracking-tight">
                 {user.name}

@@ -44,7 +44,9 @@ export function getRouter() {
     routeTree,
     context,
     scrollRestoration: true,
-    defaultPreload: 'intent',
+    // Workaround for TanStack #7759: _nonReactive read on evicted preload (intent → click race)
+    // Fixed in router-core #7805; keep 'false' until pnpm update pulls fix, then restore 'intent'
+    defaultPreload: false,
     defaultPreloadStaleTime: 0,
     defaultErrorComponent: DefaultErrorComponent,
     defaultNotFoundComponent: DefaultNotFoundComponent,

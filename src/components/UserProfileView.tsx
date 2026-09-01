@@ -13,13 +13,19 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
+import { Avatar } from "#/components/ui/avatar.tsx";
 import {
   type ProfilePostsTab,
   useProfilePosts,
   useToggleFollow,
 } from "#/lib/users/users.hooks.ts";
 import { useCreateConversation } from "#/lib/chat/chat.hooks.ts";
+import { useQuery } from "@tanstack/react-query";
+import { currentUserQueryOptions } from "#/lib/query.options.ts";
+import { useUserStories } from "#/lib/stories/stories.hooks.ts";
+import { StoryViewer } from "#/components/story/StoryViewer.tsx";
 import type { UserProfile } from "#/lib/users/users.types.ts";
+import { cn } from "#/lib/utils.ts";
 
 const tabs: { id: ProfilePostsTab; label: string; icon: typeof Grid }[] = [
   { id: "posts", label: "Posts", icon: Grid },
@@ -46,6 +52,24 @@ export function UserProfileView({
   const toggleFollow = useToggleFollow();
   const createConversation = useCreateConversation();
   const navigate = useNavigate();
+  const { data: currentUser } = useQuery(currentUserQueryOptions);
+  const { data: userStories } = useUserStories(user.username);
+  const hasStory = Array.isArray(userStories) && userStories.length > 0;
+  const hasUnseenStory = hasStory
+    ? (userStories as unknown[]).some((s: unknown) => {
+        const story = s as { viewed?: boolean; views?: unknown[] };
+        if (typeof story.viewed === "boolean") return !story.viewed;
+        if (Array.isArray(story.views)) return story.views.length === 0;
+        return true;
+      })
+    : false;
+  const showRing = hasStory;
+  const ringClass = hasUnseenStory || (isSelf && hasStory)
+    ? "ring-2 ring-accent ring-offset-2 ring-offset-background"
+    : hasStory
+      ? "ring-2 ring-border ring-offset-2 ring-offset-background"
+      : "";
+  const [storyOpen, setStoryOpen] = useState(false);
 
   const handleMessage = () => {
     createConversation.mutate(
@@ -75,15 +99,40 @@ export function UserProfileView({
         <div className="max-w-4xl mx-auto">
           {}
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-            {user.avatarUrl ? (
-              <img
-                src={user.avatarUrl}
-                alt=""
-                className="h-28 w-28 sm:h-36 sm:w-36 rounded-3xl object-cover border-4 border-background"
-              />
-            ) : (
-              <div className="h-28 w-28 sm:h-36 sm:w-36 rounded-3xl bg-secondary border-4 border-background" />
-            )}
+            {(() => {
+              const avatarEl = (
+                <Avatar
+                  src={user.avatarUrl}
+                  name={user.name}
+                  username={user.username}
+                  size="hero"
+                  shape="rounded"
+                  border
+                />
+              );
+              const ringWrap = (
+                <div
+                  className={cn("rounded-3xl", showRing && ringClass)}
+                  data-testid={
+                    hasUnseenStory ? "profile-ring-unseen" : hasStory ? "profile-ring-seen" : "profile-ring-none"
+                  }
+                >
+                  {avatarEl}
+                </div>
+              );
+              if (!hasStory) return ringWrap;
+              return (
+                <button
+                  type="button"
+                  onClick={() => setStoryOpen(true)}
+                  aria-label={`View ${user.username}'s story`}
+                  data-testid="profile-story-open"
+                  className="rounded-3xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 cursor-pointer hover:opacity-95 transition-opacity"
+                >
+                  {ringWrap}
+                </button>
+              );
+            })()}
             <div className="flex gap-2 pb-2">
               {isSelf ? (
                 <>
@@ -328,6 +377,30 @@ export function UserProfileView({
           </section>
         </div>
       </div>
+
+      {hasStory && (
+        <StoryViewer
+          open={storyOpen}
+          groups={[
+            {
+              user: {
+                id: user.id,
+                name: user.name,
+                username: user.username,
+                avatarUrl: user.avatarUrl,
+                isVerified: user.isVerified,
+                isPrivate: user.isPrivate,
+              },
+              stories: (userStories as unknown as import("#/lib/stories/stories.types.ts").Story[]) ?? [],
+              seenAll: !hasUnseenStory,
+              latestAt: (userStories as unknown as { createdAt?: string }[])?.[0]?.createdAt ?? new Date().toISOString(),
+            } as import("#/lib/stories/stories.types.ts").StoryGroup,
+          ]}
+          initialGroupIndex={0}
+          onClose={() => setStoryOpen(false)}
+          currentUserId={currentUser?.id ?? null}
+        />
+      )}
     </div>
   );
 }

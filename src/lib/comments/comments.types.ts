@@ -17,6 +17,7 @@ export interface Comment {
 	deletedAt: string | null;
 	user: CommentAuthor;
 	_count: { likes: number; replies: number };
+	liked?: boolean;
 }
 
 export interface CommentsPage {

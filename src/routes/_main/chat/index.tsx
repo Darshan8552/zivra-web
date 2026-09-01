@@ -7,6 +7,7 @@ import { getChatSocket } from "#/lib/chat/ws-client.ts";
 import { useDebouncedValue } from "#/lib/use-debounced-value.ts";
 import type { ChatConversation } from "#/lib/chat/chat.types.ts";
 import { useNavigate } from "@tanstack/react-router";
+import { Avatar } from "#/components/ui/avatar.tsx";
 import { useSuggestions } from "#/lib/users/users.hooks.ts";
 import { useToggleFollow } from "#/lib/users/users.hooks.ts";
 
@@ -204,7 +205,7 @@ function ChatPage() {
                     <div className="space-y-2">
                       {suggestions.slice(0, 4).map((u) => (
                         <div key={u.id} className="flex items-center gap-3 p-2 rounded-xl hover:bg-secondary transition-colors">
-                          {u.avatarUrl ? <img src={u.avatarUrl} alt="" className="h-10 w-10 rounded-xl object-cover" /> : <div className="h-10 w-10 rounded-xl bg-secondary" />}
+                          <Avatar src={u.avatarUrl} name={u.name} username={u.username} size="md" shape="square" />
                           <div className="flex-1 min-w-0 text-left">
                             <p className="text-sm font-medium truncate">{u.name}</p>
                             <p className="text-xs text-muted-foreground truncate">@{u.username}</p>
@@ -238,7 +239,7 @@ function ChatPage() {
                     }`}
                 >
                   <div className="relative">
-                    {avatar ? <img src={avatar} alt="" className="h-12 w-12 rounded-xl object-cover" /> : <div className="h-12 w-12 rounded-xl bg-secondary" />}
+                    <Avatar src={avatar || null} name={name} username={(c as ChatConversation).otherParticipant?.username ?? name} size="md" shape="square" className="h-12 w-12 text-base rounded-xl" />
                     {online && <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-accent border-2 border-background" />}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -273,8 +274,9 @@ function ChatPage() {
               const otherId = (active as ChatConversation)?.otherParticipant?.id;
               const online = otherId ? presence.get(otherId) ?? false : (active as unknown as { online?: boolean })?.online ?? false;
               const sub = online ? 'Active now' : ((active as unknown as { time?: string })?.time ? `Last seen ${(active as unknown as { time: string }).time} ago` : (otherId ? 'Offline' : ''));
+              const username = (active as ChatConversation)?.otherParticipant?.username ?? name;
               return (<>
-            {avatar ? <img src={avatar} alt="" className="h-11 w-11 rounded-xl object-cover" /> : <div className="h-11 w-11 rounded-xl bg-secondary" />}
+            <Avatar src={avatar || null} name={name} username={username} size="md" shape="square" className="h-11 w-11 rounded-xl" />
             <div className="flex-1 min-w-0">
               <p className="font-display font-semibold tracking-tight">{name}</p>
               <p className="text-xs text-muted-foreground">{sub}</p>
@@ -333,7 +335,7 @@ function ChatPage() {
                     ) : null}
                     {mediaType === 'PROFILE_SHARE' && sharedProfile ? (
                       <div className={`rounded-xl p-3 mb-2 flex items-center gap-3 ${alignRight ? 'bg-background/10' : 'bg-background'}`}>
-                        {sharedProfile.avatarUrl ? <img src={sharedProfile.avatarUrl} alt="" className="h-8 w-8 rounded-full object-cover" /> : <div className="h-8 w-8 rounded-full bg-secondary" />}
+                        <Avatar src={sharedProfile.avatarUrl} name={sharedProfile.name} username={sharedProfile.username} size="sm" shape="circle" />
                         <div className="min-w-0">
                           <p className="text-sm font-medium truncate">{sharedProfile.name}</p>
                           <p className="text-xs opacity-70 truncate">@{sharedProfile.username}</p>

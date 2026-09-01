@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Check, UserPlus } from "lucide-react";
+import { Avatar } from "#/components/ui/avatar.tsx";
 import { useToggleFollow } from "#/lib/users/users.hooks.ts";
 import type { FollowUser } from "#/lib/users/users.types.ts";
 
@@ -29,15 +30,13 @@ export function FollowUserCard({
 
 	return (
 		<div className="flex items-center gap-3 p-3 hover:bg-secondary/50 rounded-xl transition-colors">
-			{user.avatarUrl ? (
-				<img
-					src={user.avatarUrl}
-					alt=""
-					className="h-10 w-10 rounded-full object-cover"
-				/>
-			) : (
-				<div className="h-10 w-10 rounded-full bg-secondary" />
-			)}
+			<Avatar
+				src={user.avatarUrl}
+				name={user.name}
+				username={user.username}
+				size="md"
+				shape="circle"
+			/>
 			<div className="flex-1 min-w-0">
 				<Link
 					to="/users/$username"

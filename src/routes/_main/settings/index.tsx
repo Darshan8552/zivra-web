@@ -190,7 +190,7 @@ function SettingsPage() {
               </div>
               <Stories />
               <div className="mt-6 flex gap-3">
-                <button type="button" onClick={comingSoon} className="px-5 h-11 rounded-full bg-foreground text-background font-semibold text-sm">Manage story archive</button>
+                <Link to="/settings/close-friends" data-testid="settings-manage-close-friends" className="px-5 h-11 rounded-full bg-foreground text-background font-semibold text-sm inline-flex items-center">Manage Close Friends</Link>
                 <button type="button" onClick={comingSoon} className="px-5 h-11 rounded-full border border-border font-semibold text-sm">Story settings</button>
               </div>
             </div>
@@ -199,10 +199,10 @@ function SettingsPage() {
           {active === "close" && (
             <div className="rounded-2xl border border-dashed border-border p-8 text-center py-16">
               <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-secondary"><Users size={20} /></span>
-              <p className="overline text-muted-foreground mt-4">No close friends</p>
+              <p className="overline text-muted-foreground mt-4">Close Friends</p>
               <p className="font-display text-2xl tracking-tight mt-2">Add people to Close Friends</p>
               <p className="text-sm text-muted-foreground mt-2">Share stories only with Close Friends when you want more privacy.</p>
-              <button type="button" onClick={comingSoon} data-testid="settings-close-add" className="mt-6 inline-flex items-center gap-1.5 px-5 h-11 rounded-full bg-accent text-accent-foreground font-semibold text-sm"><UserPlus size={14} /> Add close friends</button>
+              <Link to="/settings/close-friends" data-testid="settings-close-add" className="mt-6 inline-flex items-center gap-1.5 px-5 h-11 rounded-full bg-accent text-accent-foreground font-semibold text-sm"><UserPlus size={14} /> Manage Close Friends</Link>
               <p className="text-xs text-muted-foreground mt-6 flex items-center justify-center gap-1.5"><Shield size={12} /> Only you can see your Close Friends list</p>
             </div>
           )}

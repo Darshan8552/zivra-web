@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useUpdateProfile } from "#/lib/users/users.hooks.ts";
 import { useRef, useState } from "react";
 import { Camera, MapPin } from "lucide-react";
+import { Avatar } from "#/components/ui/avatar.tsx";
 import { toast } from "sonner";
 import { getErrorMessage } from "#/lib/auth/auth.hooks.ts";
 
@@ -99,18 +100,24 @@ function EditPage() {
               type="button"
               data-testid="edit-avatar-button"
               onClick={() => avatarInputRef.current?.click()}
-              className="relative h-20 w-20 rounded-2xl overflow-hidden bg-secondary shrink-0 group"
+              className="relative h-20 w-20 rounded-2xl overflow-hidden shrink-0 group"
             >
               {avatarPreview ? (
                 <img
                   src={avatarPreview}
                   alt=""
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-cover rounded-2xl"
                 />
               ) : (
-                <div className="h-full w-full bg-secondary" />
+                <Avatar
+                  name={name}
+                  username={username}
+                  size="xl"
+                  shape="square"
+                  className="h-full w-full rounded-2xl text-xl"
+                />
               )}
-              <span className="absolute inset-0 flex items-center justify-center bg-background/0 group-hover:bg-background/60 transition-colors duration-200">
+              <span className="absolute inset-0 flex items-center justify-center bg-background/0 group-hover:bg-background/60 transition-colors duration-200 rounded-2xl">
                 <Camera
                   size={18}
                   strokeWidth={1.75}

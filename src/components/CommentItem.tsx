@@ -1,7 +1,6 @@
-import { Heart } from "lucide-react";
-import { useState } from "react";
+import { Avatar } from "#/components/ui/avatar.tsx";
+import { LikeButton } from "#/components/ui/like-button.tsx";
 import type { Comment } from "#/lib/comments/comments.types.ts";
-import { useToggleCommentLike } from "#/lib/likes/likes.hooks.ts";
 import { timeAgo } from "#/lib/utils.ts";
 
 const fmt = (n: number) =>
@@ -14,31 +13,22 @@ export function CommentItem({
 	comment: Comment;
 	onReply?: (comment: Comment) => void;
 }) {
-	const [liked, setLiked] = useState(false);
-	const [likes, setLikes] = useState(comment._count.likes);
-	const toggleLike = useToggleCommentLike(comment.id);
-
-	const handleLike = () => {
-		const next = !liked;
-		setLiked(next);
-		setLikes((n) => (next ? n + 1 : n - 1));
-		toggleLike.mutate(liked);
-	};
+	const liked = Boolean(comment.liked);
+	const likes = comment._count.likes;
 
 	return (
 		<div
 			className="flex items-start gap-3 py-3"
 			data-testid={`comment-${comment.id}`}
 		>
-			{comment.user.avatarUrl ? (
-				<img
-					src={comment.user.avatarUrl}
-					alt=""
-					className="h-8 w-8 rounded-full object-cover mt-0.5"
-				/>
-			) : (
-				<div className="h-8 w-8 rounded-full bg-secondary mt-0.5" />
-			)}
+			<Avatar
+				src={comment.user.avatarUrl}
+				name={comment.user.name}
+				username={comment.user.username}
+				size="sm"
+				shape="circle"
+				className="mt-0.5"
+			/>
 
 			<div className="flex-1 min-w-0">
 				<p className="text-[14px] leading-relaxed">
@@ -63,19 +53,16 @@ export function CommentItem({
 				</div>
 			</div>
 
-			<button
-				type="button"
-				data-testid={`comment-like-${comment.id}`}
-				onClick={handleLike}
-				aria-label="Like comment"
-				className="mt-1 text-muted-foreground hover:text-foreground transition-colors duration-200"
-			>
-				<Heart
-					size={14}
-					strokeWidth={1.75}
-					className={liked ? "fill-accent text-accent" : ""}
-				/>
-			</button>
+			<LikeButton
+				id={comment.id}
+				type="comment"
+				liked={liked}
+				count={likes}
+				size={14}
+				showCount={false}
+				testId={`comment-like-${comment.id}`}
+				className="mt-1 text-muted-foreground hover:text-foreground"
+			/>
 		</div>
 	);
 }

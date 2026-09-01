@@ -1,3 +1,4 @@
+import { Avatar } from "#/components/ui/avatar.tsx";
 import type { UserSuggestion } from "#/lib/posts/posts.types.ts";
 import { useId, useState } from "react";
 import { useUserTagSuggestions } from "#/lib/posts/posts.hooks.ts";
@@ -43,15 +44,13 @@ export function UserTagPicker({
             data-testid={`create-tagged-user-chip-${user.username}`}
             className="inline-flex items-center gap-1.5 text-xs font-semibold pl-1.5 pr-2 h-7 rounded-full bg-accent/10 text-accent"
           >
-            {user.avatarUrl ? (
-              <img
-                src={user.avatarUrl}
-                alt=""
-                className="h-5 w-5 rounded-full object-cover"
-              />
-            ) : (
-              <span className="h-5 w-5 rounded-full bg-accent/20" />
-            )}
+            <Avatar
+              src={user.avatarUrl}
+              name={user.name}
+              username={user.username}
+              size="xs"
+              shape="circle"
+            />
             @{user.username}
             <button
               type="button"
@@ -100,15 +99,13 @@ export function UserTagPicker({
                 onClick={() => addUser(s)}
                 className="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-secondary transition-colors duration-150"
               >
-                {s.avatarUrl ? (
-                  <img
-                    src={s.avatarUrl}
-                    alt=""
-                    className="h-8 w-8 rounded-lg object-cover"
-                  />
-                ) : (
-                  <div className="h-8 w-8 rounded-lg bg-accent/10" />
-                )}
+                <Avatar
+                  src={s.avatarUrl}
+                  name={s.name}
+                  username={s.username}
+                  size="sm"
+                  shape="square"
+                />
                 <div className="min-w-0">
                   <p className="font-display font-semibold text-sm tracking-tight truncate">
                     {s.name}

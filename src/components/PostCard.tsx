@@ -4,14 +4,12 @@ import {
 	BookmarkPlus,
 	Copy,
 	Flag,
-	Heart,
 	MapPin,
 	MessageCircle,
 	MoreHorizontal,
 	Share2,
 	Trash2,
 } from "lucide-react";
-import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { RichText } from "#/components/RichText.tsx";
 import {
@@ -21,14 +19,12 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "#/components/ui/dropdown-menu.tsx";
+import { LikeButton } from "#/components/ui/like-button.tsx";
 import { useToggleBookmark } from "#/lib/bookmarks/bookmarks.hooks.ts";
-import {
-	useBookmarkedState,
-	useLikedState,
-} from "#/lib/interactions/interactions.hooks.ts";
-import { useTogglePostLike } from "#/lib/likes/likes.hooks.ts";
+import { useBookmarkedState } from "#/lib/interactions/interactions.hooks.ts";
 import { useDeletePost } from "#/lib/posts/posts.hooks.ts";
 import type { Post } from "#/lib/posts/posts.types.ts";
+import { Avatar } from "#/components/ui/avatar.tsx";
 import { timeAgo } from "#/lib/utils.ts";
 
 const fmt = (n: number) =>
@@ -97,8 +93,6 @@ export const PostCard = ({
 	currentUserId?: string;
 	priority?: boolean;
 }) => {
-	const [liked, setLiked] = useLikedState(post.id, post.liked);
-	const [likes, setLikes] = useState(post._count.likes);
 	const [bookmarked, setBookmarked] = useBookmarkedState(
 		post.id,
 		post.bookmarked,
@@ -106,26 +100,8 @@ export const PostCard = ({
 
 	const isOwner = currentUserId === post.userId;
 
-	const toggleLikeMutation = useTogglePostLike(post.id);
 	const toggleBookmarkMutation = useToggleBookmark(post.id);
 	const deletePostMutation = useDeletePost();
-
-	useEffect(() => {
-		setLikes(post._count.likes);
-	}, [post._count.likes]);
-
-	const handleLike = () => {
-		const next = !liked;
-		const prevLikes = likes;
-		setLiked(next);
-		setLikes((n) => (next ? n + 1 : n - 1));
-		toggleLikeMutation.mutate(liked, {
-			onError: () => {
-				setLiked(!next);
-				setLikes(prevLikes);
-			},
-		});
-	};
 
 	const handleBookmark = () => {
 		const next = !bookmarked;
@@ -142,16 +118,13 @@ export const PostCard = ({
 		<article className="w-full" data-testid={`post-${post.id}`}>
 			{}
 			<header className="flex items-center gap-3 mb-4 px-1">
-				{post.user.avatarUrl ? (
-					<img
-						src={post.user.avatarUrl}
-						alt=""
-						aria-hidden="true"
-						className="h-10 w-10 rounded-xl object-cover"
-					/>
-				) : (
-					<div className="h-10 w-10 rounded-xl bg-secondary" aria-hidden="true" />
-				)}
+				<Avatar
+					src={post.user.avatarUrl}
+					name={post.user.name}
+					username={post.user.username}
+					size="md"
+					shape="square"
+				/>
 				<div className="flex-1 min-w-0">
 					<div className="flex items-baseline gap-2">
 						<p className="font-display font-semibold tracking-tight truncate">
@@ -266,22 +239,14 @@ export const PostCard = ({
 			{}
 			<div className="flex items-center justify-between mt-4 px-1">
 				<div className="flex items-center gap-5">
-					<button
-						type="button"
-						data-testid={`post-like-${post.id}`}
-						aria-label={liked ? "Unlike" : "Like"}
-						aria-pressed={liked}
-						onClick={handleLike}
-						className="flex items-center gap-2 text-sm font-medium transition-colors duration-200 hover:text-accent"
-					>
-						<Heart
-							size={20}
-							strokeWidth={1.75}
-							aria-hidden="true"
-							className={liked ? "fill-accent text-accent" : ""}
-						/>
-						<span className="tabular-nums">{fmt(likes)}</span>
-					</button>
+					<LikeButton
+						id={post.id}
+						type="post"
+						liked={post.liked}
+						count={post._count.likes}
+						size={20}
+						testId={`post-like-${post.id}`}
+					/>
 					<Link
 						to="/posts/$postId"
 						params={{ postId: post.id }}

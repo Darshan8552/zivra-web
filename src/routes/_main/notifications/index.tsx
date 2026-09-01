@@ -10,6 +10,7 @@ import {
 	UserPlus,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Avatar } from "#/components/ui/avatar.tsx";
 import {
 	useAcceptFollowRequest,
 	useDeclineFollowRequest,
@@ -324,15 +325,14 @@ function NotificationPage() {
 										disabled={!actor}
 										className="relative shrink-0 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:cursor-default"
 									>
-										{avatar ? (
-											<img
-												src={avatar}
-												alt=""
-												className="h-12 w-12 rounded-xl object-cover"
-											/>
-										) : (
-											<div className="h-12 w-12 rounded-xl bg-secondary" />
-										)}
+										<Avatar
+											src={avatar ?? null}
+											name={actor?.name}
+											username={actor?.username}
+											size="md"
+											shape="square"
+											className="h-12 w-12 rounded-xl"
+										/>
 										<span className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-background border-2 border-background flex items-center justify-center">
 											<Icon
 												size={12}

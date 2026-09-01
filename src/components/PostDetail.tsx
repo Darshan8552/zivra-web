@@ -3,7 +3,6 @@ import {
 	Bookmark,
 	Copy,
 	Flag,
-	Heart,
 	MapPin,
 	MessageCircle,
 	MoreHorizontal,
@@ -11,8 +10,9 @@ import {
 	Tag,
 	Trash2,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
+import { LikeButton } from "#/components/ui/like-button.tsx";
 import { CommentsSection } from "#/components/CommentsSection.tsx";
 import { RichText } from "#/components/RichText.tsx";
 import {
@@ -23,12 +23,9 @@ import {
 	DropdownMenuTrigger,
 } from "#/components/ui/dropdown-menu.tsx";
 import { useToggleBookmark } from "#/lib/bookmarks/bookmarks.hooks.ts";
-import {
-	useBookmarkedState,
-	useLikedState,
-} from "#/lib/interactions/interactions.hooks.ts";
-import { useTogglePostLike } from "#/lib/likes/likes.hooks.ts";
+import { useBookmarkedState } from "#/lib/interactions/interactions.hooks.ts";
 import { useDeletePost } from "#/lib/posts/posts.hooks.ts";
+import { Avatar } from "#/components/ui/avatar.tsx";
 import type { Post } from "#/lib/posts/posts.types.ts";
 import { timeAgo } from "#/lib/utils.ts";
 
@@ -52,8 +49,6 @@ export function PostDetail({
 	post: Post;
 	currentUserId?: string;
 }) {
-	const [liked, setLiked] = useLikedState(post.id, post.liked);
-	const [likes, setLikes] = useState(post._count.likes);
 	const [bookmarked, setBookmarked] = useBookmarkedState(
 		post.id,
 		post.bookmarked,
@@ -62,20 +57,8 @@ export function PostDetail({
 
 	const isOwner = currentUserId === post.userId;
 
-	const toggleLike = useTogglePostLike(post.id);
 	const toggleBookmark = useToggleBookmark(post.id);
 	const deletePostMutation = useDeletePost();
-
-	useEffect(() => {
-		setLikes(post._count.likes);
-	}, [post._count.likes]);
-
-	const handleLike = () => {
-		const next = !liked;
-		setLiked(next);
-		setLikes((n) => (next ? n + 1 : n - 1));
-		toggleLike.mutate(liked);
-	};
 
 	const handleBookmark = () => {
 		const next = !bookmarked;
@@ -89,15 +72,13 @@ export function PostDetail({
 		<div className="max-w-2xl mx-auto">
 			{}
 			<header className="flex items-center gap-3 px-4 py-3 border-b border-border">
-				{post.user.avatarUrl ? (
-					<img
-						src={post.user.avatarUrl}
-						alt=""
-						className="h-10 w-10 rounded-full object-cover"
-					/>
-				) : (
-					<div className="h-10 w-10 rounded-full bg-secondary" />
-				)}
+				<Avatar
+					src={post.user.avatarUrl}
+					name={post.user.name}
+					username={post.user.username}
+					size="md"
+					shape="circle"
+				/>
 				<div className="flex-1 min-w-0">
 					<div className="flex items-center gap-1.5">
 						<Link
@@ -235,19 +216,14 @@ export function PostDetail({
 			{}
 			<div className="flex items-center justify-between px-4 py-3">
 				<div className="flex items-center gap-5">
-					<button
-						type="button"
-						data-testid="post-like"
-						onClick={handleLike}
-						className="flex items-center gap-2 text-sm font-medium transition-colors duration-200 hover:text-accent"
-					>
-						<Heart
-							size={22}
-							strokeWidth={1.75}
-							className={liked ? "fill-accent text-accent" : ""}
-						/>
-						<span className="tabular-nums">{fmt(likes)}</span>
-					</button>
+					<LikeButton
+						id={post.id}
+						type="post"
+						liked={post.liked}
+						count={post._count.likes}
+						size={22}
+						testId="post-like"
+					/>
 					<Link
 						to="/posts/$postId"
 						params={{ postId: post.id }}

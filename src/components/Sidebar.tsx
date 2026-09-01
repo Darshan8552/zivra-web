@@ -11,6 +11,7 @@ import {
   User,
 } from "lucide-react";
 import { ModeToggle } from "#/components/mode-toggle.tsx";
+import { Avatar } from "#/components/ui/avatar.tsx";
 import { currentUserQueryOptions } from "#/lib/query.options.ts";
 import { useQuery } from "@tanstack/react-query";
 import { getErrorMessage, useSignOut } from "#/lib/auth/auth.hooks.ts";
@@ -134,13 +135,12 @@ export const Sidebar = () => {
           {signOut.isPending ? "Signing out…" : "Sign out"}
         </button>
         <div className="flex items-center gap-3 rounded-xl border border-border p-3">
-          <img
-            src={
-              user?.avatarUrl ??
-              "https://images.unsplash.com/photo-1506863530036-1efeddceb993?w=200&auto=format"
-            }
-            alt=""
-            className="h-10 w-10 rounded-lg object-cover"
+          <Avatar
+            src={user?.avatarUrl}
+            name={user?.name}
+            username={user?.username}
+            size="md"
+            shape="square"
           />
           <div className="flex-1 min-w-0">
             <p className="font-display font-semibold text-sm tracking-tight truncate">

@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Loader2, SearchIcon, TrendingUp } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { PostCard } from "#/components/PostCard.tsx";
+import { Avatar } from "#/components/ui/avatar.tsx";
 import { useDebouncedValue } from "#/lib/use-debounced-value.ts";
 import {
   useHashtagSuggestions,
@@ -290,15 +291,14 @@ function SearchPage() {
                         params={{ username: s.username }}
                         className="flex flex-col items-center"
                       >
-                        {avatarUrl(s) ? (
-                          <img
-                            src={avatarUrl(s)}
-                            alt=""
-                            className="h-16 w-16 rounded-xl object-cover mx-auto"
-                          />
-                        ) : (
-                          <div className="h-16 w-16 rounded-xl bg-secondary mx-auto" />
-                        )}
+                        <Avatar
+                          src={s.avatarUrl}
+                          name={s.name}
+                          username={s.username}
+                          size="lg"
+                          shape="square"
+                          className="mx-auto"
+                        />
                         <p className="mt-3 font-display font-semibold text-sm tracking-tight">
                           {s.name}
                         </p>
@@ -438,15 +438,14 @@ function SearchPage() {
                           params={{ username: s.username }}
                           className="flex flex-col items-center"
                         >
-                          {s.avatarUrl ? (
-                            <img
-                              src={s.avatarUrl}
-                              alt=""
-                              className="h-16 w-16 rounded-xl object-cover mx-auto"
-                            />
-                          ) : (
-                            <div className="h-16 w-16 rounded-xl bg-secondary mx-auto" />
-                          )}
+                          <Avatar
+                            src={s.avatarUrl}
+                            name={s.name}
+                            username={s.username}
+                            size="lg"
+                            shape="square"
+                            className="mx-auto"
+                          />
                           <p className="mt-3 font-display font-semibold text-sm tracking-tight">
                             {s.name}
                           </p>

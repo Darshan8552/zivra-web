@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { Avatar } from "#/components/ui/avatar.tsx";
 import { FollowList } from "#/components/FollowList.tsx";
 import { userProfileQueryOptions } from "#/lib/users/users.hooks.ts";
 
@@ -93,15 +94,13 @@ function FollowersFollowingPage() {
 					{/* Header with user info */}
 					<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
 						<div className="flex items-center gap-3">
-							{user.avatarUrl ? (
-								<img
-									src={user.avatarUrl}
-									alt=""
-									className="h-16 w-16 rounded-2xl object-cover"
-								/>
-							) : (
-								<div className="h-16 w-16 rounded-2xl bg-secondary" />
-							)}
+							<Avatar
+								src={user.avatarUrl}
+								name={user.name}
+								username={user.username}
+								size="lg"
+								shape="square"
+							/>
 							<div>
 								<h1 className="font-display font-bold text-2xl tracking-tight">
 									{user.name}

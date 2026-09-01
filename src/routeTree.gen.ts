@@ -25,6 +25,7 @@ import { Route as MainNotificationsIndexRouteImport } from './routes/_main/notif
 import { Route as MainProfileIndexRouteImport } from './routes/_main/profile/index'
 import { Route as MainSearchIndexRouteImport } from './routes/_main/search/index'
 import { Route as MainSettingsIndexRouteImport } from './routes/_main/settings/index'
+import { Route as MainSettingsCloseFriendsRouteImport } from './routes/_main/settings/close-friends'
 import { Route as MainPostsPostIdIndexRouteImport } from './routes/_main/posts/$postId/index'
 import { Route as MainProfileEditIndexRouteImport } from './routes/_main/profile/edit/index'
 import { Route as MainUsersUsernameIndexRouteImport } from './routes/_main/users/$username/index'
@@ -108,6 +109,12 @@ const MainSettingsIndexRoute = MainSettingsIndexRouteImport.update({
   path: '/settings/',
   getParentRoute: () => MainRouteRoute,
 } as any)
+const MainSettingsCloseFriendsRoute =
+  MainSettingsCloseFriendsRouteImport.update({
+    id: '/settings/close-friends',
+    path: '/settings/close-friends',
+    getParentRoute: () => MainRouteRoute,
+  } as any)
 const MainPostsPostIdIndexRoute = MainPostsPostIdIndexRouteImport.update({
   id: '/posts/$postId/',
   path: '/posts/$postId/',
@@ -132,6 +139,7 @@ const MainUsersUsernameFollowersFollowingRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/settings/close-friends': typeof MainSettingsCloseFriendsRoute
   '/forgot-password/': typeof AuthForgotPasswordIndexRoute
   '/reset-password/': typeof AuthResetPasswordIndexRoute
   '/signin/': typeof AuthSigninIndexRoute
@@ -152,6 +160,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/settings/close-friends': typeof MainSettingsCloseFriendsRoute
   '/forgot-password': typeof AuthForgotPasswordIndexRoute
   '/reset-password': typeof AuthResetPasswordIndexRoute
   '/signin': typeof AuthSigninIndexRoute
@@ -175,6 +184,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_auth': typeof AuthRouteRouteWithChildren
   '/_main': typeof MainRouteRouteWithChildren
+  '/_main/settings/close-friends': typeof MainSettingsCloseFriendsRoute
   '/_auth/forgot-password/': typeof AuthForgotPasswordIndexRoute
   '/_auth/reset-password/': typeof AuthResetPasswordIndexRoute
   '/_auth/signin/': typeof AuthSigninIndexRoute
@@ -197,6 +207,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/settings/close-friends'
     | '/forgot-password/'
     | '/reset-password/'
     | '/signin/'
@@ -217,6 +228,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/settings/close-friends'
     | '/forgot-password'
     | '/reset-password'
     | '/signin'
@@ -239,6 +251,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_auth'
     | '/_main'
+    | '/_main/settings/close-friends'
     | '/_auth/forgot-password/'
     | '/_auth/reset-password/'
     | '/_auth/signin/'
@@ -378,6 +391,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MainSettingsIndexRouteImport
       parentRoute: typeof MainRouteRoute
     }
+    '/_main/settings/close-friends': {
+      id: '/_main/settings/close-friends'
+      path: '/settings/close-friends'
+      fullPath: '/settings/close-friends'
+      preLoaderRoute: typeof MainSettingsCloseFriendsRouteImport
+      parentRoute: typeof MainRouteRoute
+    }
     '/_main/posts/$postId/': {
       id: '/_main/posts/$postId/'
       path: '/posts/$postId'
@@ -430,6 +450,7 @@ const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
 )
 
 interface MainRouteRouteChildren {
+  MainSettingsCloseFriendsRoute: typeof MainSettingsCloseFriendsRoute
   MainBookmarksIndexRoute: typeof MainBookmarksIndexRoute
   MainChatIndexRoute: typeof MainChatIndexRoute
   MainCreateIndexRoute: typeof MainCreateIndexRoute
@@ -445,6 +466,7 @@ interface MainRouteRouteChildren {
 }
 
 const MainRouteRouteChildren: MainRouteRouteChildren = {
+  MainSettingsCloseFriendsRoute: MainSettingsCloseFriendsRoute,
   MainBookmarksIndexRoute: MainBookmarksIndexRoute,
   MainChatIndexRoute: MainChatIndexRoute,
   MainCreateIndexRoute: MainCreateIndexRoute,
